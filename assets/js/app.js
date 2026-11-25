@@ -1,0 +1,727 @@
+/* =========================================================================
+   LAHUD — funcionamento do site (não precisa mexer para mudar produtos)
+   Roteamento por hash (#/...), sacola e lista de desejos no navegador,
+   pedido finalizado pelo WhatsApp.
+   ========================================================================= */
+(function () {
+  "use strict";
+
+  const L = window.LOJA, P = window.PRODUTOS, CATS = window.CATEGORIAS, COLS = window.COLECOES;
+  const $ = (s, el = document) => el.querySelector(s);
+  const $$ = (s, el = document) => [...el.querySelectorAll(s)];
+  const main = $("#conteudo");
+
+  // --------------------------------------------------------------- util
+  const esc = s => String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  const brl = v => v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+  const brl0 = v => "R$ " + v.toLocaleString("pt-BR", { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+  const parcela = v => `ou ${L.parcelas}x de ${brl(v / L.parcelas)} sem juros`;
+  const norm = s => s.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
+  const porId = id => P.find(p => p.id === id);
+  const catNome = slug => (CATS.find(c => c.slug === slug) || {}).nome || "";
+  const nomeCompleto = p => p.nome + (p.variante ? " · " + p.variante : "");
+  const wa = texto => `https://wa.me/${L.whatsapp}?text=${encodeURIComponent(texto)}`;
+
+  const ESTRELA = `<svg class="estrela" viewBox="0 0 40 40" aria-hidden="true"><path d="M20 2 21.2 18.8 38 20 21.2 21.2 20 38 18.8 21.2 2 20 18.8 18.8Z" fill="currentColor"/><path d="m20 20 7-7M20 20l-7 7M20 20l7 7M20 20l-7-7" stroke="currentColor" stroke-width=".6"/></svg>`;
+  const CORACAO = `<svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20s-7.5-4.6-7.5-10.2A4.2 4.2 0 0 1 12 7.3a4.2 4.2 0 0 1 7.5 2.5C19.5 15.4 12 20 12 20Z" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></svg>`;
+
+  const armazenamento = {
+    ler(k, padrao) { try { return JSON.parse(localStorage.getItem(k)) ?? padrao; } catch { return padrao; } },
+    gravar(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch { /* modo privado */ } }
+  };
+  let sacola = armazenamento.ler("lahud_sacola", []).filter(id => porId(id));
+  let favoritos = armazenamento.ler("lahud_desejos", []).filter(id => porId(id));
+  let embrulho = armazenamento.ler("lahud_presente", { ativo: false, mensagem: "" });
+
+  // --------------------------------------------------------------- estado
+  function salvar() {
+    armazenamento.gravar("lahud_sacola", sacola);
+    armazenamento.gravar("lahud_desejos", favoritos);
+    armazenamento.gravar("lahud_presente", embrulho);
+    badges();
+  }
+  function badges() {
+    const b1 = $("#badgeSacola"), b2 = $("#badgeFav");
+    b1.textContent = sacola.length; b1.hidden = !sacola.length;
+    b2.textContent = favoritos.length; b2.hidden = !favoritos.length;
+  }
+  function adicionar(id) {
+    const p = porId(id);
+    if (!p || p.vendida) return;
+    if (!sacola.includes(id)) sacola.push(id);
+    salvar(); renderSacola(); abrirSacola();
+  }
+  function remover(id) { sacola = sacola.filter(x => x !== id); salvar(); renderSacola(); }
+  function alternarDesejo(id) {
+    const tinha = favoritos.includes(id);
+    favoritos = tinha ? favoritos.filter(x => x !== id) : [...favoritos, id];
+    salvar();
+    $$(`[data-fav="${id}"]`).forEach(b => b.setAttribute("aria-pressed", String(!tinha)));
+    aviso(tinha ? "Removida da lista de desejos" : "Adicionada à lista de desejos", tinha ? null : ["Ver lista", "#/favoritos"]);
+    if (location.hash === "#/favoritos") roteador();
+  }
+
+  let tAviso;
+  function aviso(msg, acao) {
+    const t = $("#toast");
+    t.innerHTML = esc(msg) + (acao ? ` <a href="${acao[1]}">${esc(acao[0])}</a>` : "");
+    t.classList.add("on");
+    clearTimeout(tAviso); tAviso = setTimeout(() => t.classList.remove("on"), 3200);
+  }
+
+  // --------------------------------------------------------------- componentes
+  function card(p) {
+    const fav = favoritos.includes(p.id);
+    const imgs = p.fotos.slice(0, 2).map((f, i) => `<img src="${f}" alt="${i ? "" : esc(nomeCompleto(p))}" loading="lazy" width="600" height="780">`).join("");
+    return `
+      <article class="card${p.vendida ? " vendida" : ""}">
+        <a href="#/joia/${p.id}" class="card__link">
+          <div class="card__img">
+            ${imgs}
+            <span class="card__selo">${p.vendida ? "Vendida" : (p.colecao === "old-but-gold" ? "Peça única" : "Nova")}</span>
+          </div>
+          <div class="card__info">
+            <h3 class="card__nome">${esc(p.nome)}</h3>
+            <div class="card__meta">Ouro ${p.ouro} 18k${p.variante ? "" : ""} · ${String(p.peso).replace(".", ",")} g</div>
+            <div class="card__preco">${p.vendida ? "Indisponível" : brl(p.preco)}</div>
+          </div>
+        </a>
+        <button class="card__fav" data-fav="${p.id}" aria-pressed="${fav}" aria-label="Lista de desejos: ${esc(nomeCompleto(p))}">${CORACAO}</button>
+      </article>`;
+  }
+
+  function trilho(lista, id) {
+    return `
+      <div class="trilho-wrap">
+        <div class="trilho" id="${id}">${lista.map(card).join("")}</div>
+        <div class="trilho__ctrl">
+          <div class="trilho__barra"><span></span></div>
+          <div class="trilho__setas">
+            <button class="seta" data-trilho="${id}" data-dir="-1" aria-label="Anterior"><svg width="18" height="18" viewBox="0 0 24 24"><path d="M15 5 8 12l7 7" fill="none" stroke="currentColor" stroke-width="1.2"/></svg></button>
+            <button class="seta" data-trilho="${id}" data-dir="1" aria-label="Próxima"><svg width="18" height="18" viewBox="0 0 24 24"><path d="m9 5 7 7-7 7" fill="none" stroke="currentColor" stroke-width="1.2"/></svg></button>
+          </div>
+        </div>
+      </div>`;
+  }
+  function ativarTrilhos() {
+    $$(".trilho").forEach(t => {
+      const barra = t.parentElement.querySelector(".trilho__barra span");
+      const upd = () => {
+        const vis = t.clientWidth / t.scrollWidth;
+        barra.style.width = (vis * 100) + "%";
+        barra.style.left = (t.scrollLeft / t.scrollWidth * 100) + "%";
+      };
+      t.addEventListener("scroll", upd, { passive: true }); upd();
+    });
+  }
+
+  // Padrão inspirado nos azulejos da casa de Maria e José (coleção Maria & Luzia)
+  function azulejo() {
+    const tile = `
+      <g fill="none" stroke="currentColor" stroke-width=".7">
+        <rect x="1" y="1" width="58" height="58"/>
+        <path d="M30 4c6 10 16 16 26 26-10 10-20 16-26 26-6-10-16-16-26-26C14 20 24 14 30 4Z"/>
+        <circle cx="30" cy="30" r="7"/>
+        <path d="M1 1c10 2 16 8 18 18M59 1c-10 2-16 8-18 18M1 59c10-2 16-8 18-18M59 59c-10-2-16-8-18-18"/>
+      </g>`;
+    let g = "";
+    for (let y = 0; y < 4; y++) for (let x = 0; x < 4; x++) g += `<g transform="translate(${x * 60} ${y * 60})">${tile}</g>`;
+    return `<svg viewBox="0 0 240 240" class="azulejo" aria-hidden="true">${g}</svg>`;
+  }
+
+  // --------------------------------------------------------------- páginas
+  function paginaInicial() {
+    const col = COLS["old-but-gold"];
+    const destaques = P.filter(p => p.destaque && !p.vendida);
+    main.innerHTML = `
+      <section class="hero" data-hero>
+        <div class="hero__img"><img src="${col.capa}" alt="Corrente em ouro 18k LAHUD" fetchpriority="high" width="843" height="1500"></div>
+        <div class="hero__conteudo hero__entra">
+          <p class="eyebrow">Ouro 18k · pequenas séries · design autoral</p>
+          <h1>Joias que contam <em>histórias</em></h1>
+          <p>Peças feitas para carregar memórias, encontros e sentimentos, e para atravessar o tempo com você.</p>
+          <div class="hero__acoes">
+            <a href="#/colecao/old-but-gold" class="btn btn--branco">Descobrir Old But Gold</a>
+            <a href="#/historia" class="btn btn--contorno-branco">Nossa história</a>
+          </div>
+        </div>
+        <span class="hero__rolar" aria-hidden="true"></span>
+      </section>
+
+      <section class="secao">
+        <div class="wrap manifesto revela">
+          ${ESTRELA}
+          <p>Para a LAHUD, toda joia tem significado. Cada peça nasce em ouro 18k, em pequenas séries, para ser <em>herdada</em>, não substituída.</p>
+          <div class="assinatura">Por Verônica e Luzia</div>
+        </div>
+      </section>
+
+      <section class="split escuro">
+        <div class="split__img"><img src="${col.capa2}" alt="Anel Mina em ouro amarelo 18k com pedras naturais" loading="lazy"></div>
+        <div class="split__texto revela">
+          <p class="eyebrow">Coleção · peças únicas</p>
+          <h2>${col.titulo}</h2>
+          <p>${esc(col.chamada)}</p>
+          <p>Anéis, correntes, brincos e braceletes em ouro 18k, selecionados um a um. Cada joia é única e não terá reposição.</p>
+          <a href="#/colecao/old-but-gold" class="btn btn--branco">Ver as ${P.filter(p => p.colecao === "old-but-gold").length} peças</a>
+        </div>
+      </section>
+
+      <section class="secao">
+        <div class="wrap">
+          <div class="secao__topo revela">
+            <p class="eyebrow eyebrow--ouro">Sem reposição</p>
+            <h2>Peças <em>únicas</em></h2>
+            <p>Quando uma joia Old But Gold encontra sua nova história, ela sai da vitrine para sempre.</p>
+          </div>
+          ${trilho(destaques, "trilhoDestaques")}
+        </div>
+      </section>
+
+      <section class="secao secao--pedra">
+        <div class="wrap">
+          <div class="secao__topo revela">
+            <p class="eyebrow">Explore</p>
+            <h2>Por categoria</h2>
+          </div>
+          <div class="categorias revela">
+            ${CATS.map(c => `<a class="categoria" href="#/joias/${c.slug}"><img src="${c.capa}" alt="" loading="lazy"><span>${c.nome}<small>${P.filter(p => p.categoria === c.slug).length} peças</small></span></a>`).join("")}
+          </div>
+        </div>
+      </section>
+
+      <section class="citacao">
+        <img src="assets/img/joias/brincos-modelo.jpg" alt="" loading="lazy">
+        <div class="citacao__txt revela">
+          ${ESTRELA}
+          <p>“Algumas joias foram feitas para <em>atravessar o tempo</em>.”</p>
+          <a href="#/historia" class="btn btn--contorno-branco">Conheça a LAHUD</a>
+        </div>
+      </section>
+
+      ${blocoMariaLuzia(true)}
+
+      <section class="secao" style="padding-block: clamp(60px, 7vw, 100px)">
+        <div class="wrap valores revela">
+          <div><strong>18k</strong><span>Ouro em todas as peças</span></div>
+          <div><strong>${L.parcelas}x</strong><span>Sem juros</span></div>
+          <div><strong>Autoral</strong><span>Design de ${esc(L.designer)}</span></div>
+          <div><strong>1 a 1</strong><span>Atendimento personalizado</span></div>
+        </div>
+      </section>
+
+      <section class="secao secao--pedra">
+        <div class="wrap">
+          <div class="secao__topo revela">
+            <p class="eyebrow">A experiência LAHUD</p>
+            <h2>Feita para <em>você</em></h2>
+          </div>
+          ${blocoServicos()}
+        </div>
+      </section>`;
+    ativarTrilhos();
+  }
+
+  function blocoMariaLuzia(curto) {
+    const c = COLS["maria-e-luzia"];
+    const msg = "Olá! Gostaria de receber o catálogo da coleção Maria & Luzia.";
+    return `
+      <section class="split split--inverso">
+        <div class="split__img split__img--azulejo">${azulejo()}</div>
+        <div class="split__texto revela">
+          <p class="eyebrow eyebrow--ouro">Coleção autoral</p>
+          <h2>${c.titulo}</h2>
+          <p>${esc(c.chamada)}</p>
+          ${(curto ? c.texto.slice(0, 1) : c.texto).map(t => `<p>${esc(t)}</p>`).join("")}
+          <a href="${wa(msg)}" target="_blank" rel="noopener" class="btn">Receber o catálogo</a>
+          ${curto ? `<a href="#/colecao/maria-e-luzia" class="link" style="margin-top:26px">A história da coleção</a>` : ""}
+        </div>
+      </section>`;
+  }
+
+  function blocoServicos() {
+    const itens = [
+      ["Personalização", "Gravações, ajustes de aro e criação a partir da sua história ou de joias de família.", "#/personalizacao", "Saiba mais"],
+      ["Facilidades", `Pagamento em até ${L.parcelas}x sem juros e atendimento individual do primeiro contato à entrega.`, "#/atendimento", "Atendimento"],
+      ["Cuidados", "Como guardar, limpar e conservar suas joias de ouro 18k para que durem gerações.", "#/cuidados", "Ver cuidados"],
+      ["Clientes VIP", "Grupo exclusivo com lançamentos em primeira mão e condições especiais.", wa("Olá! Quero fazer parte do grupo de clientes VIP da LAHUD."), "Quero participar"]
+    ];
+    return `<div class="servicos revela">${itens.map(([t, d, href, cta]) => `
+      <div class="servico">${ESTRELA}<h3>${t}</h3><p>${d}</p>
+        <a class="link" href="${href}"${href.startsWith("http") ? ' target="_blank" rel="noopener"' : ""}>${cta}</a></div>`).join("")}</div>`;
+  }
+
+  function paginaColecao(slug) {
+    const c = COLS[slug];
+    if (!c) return pagina404();
+    if (slug === "maria-e-luzia") {
+      main.innerHTML = `
+        <section class="col-hero col-hero--tipo">
+          <div class="col-hero__txt hero__entra">
+            <p class="eyebrow" style="color:var(--areia)">Coleção autoral · por Verônica e Luzia</p>
+            <h1>${c.titulo}</h1>
+            <p>${esc(c.chamada)}</p>
+          </div>
+        </section>
+        ${blocoMariaLuzia(false)}
+        <section class="secao secao--pedra">
+          <div class="wrap manifesto revela">
+            ${ESTRELA}
+            <p>O catálogo completo é enviado em primeira mão às nossas clientes. <em>Peça o seu</em> pelo WhatsApp.</p>
+            <div style="margin-top:36px"><a class="btn" target="_blank" rel="noopener" href="${wa("Olá! Gostaria de receber o catálogo da coleção Maria & Luzia.")}">Receber o catálogo</a></div>
+          </div>
+        </section>`;
+      return;
+    }
+    main.innerHTML = `
+      <section class="col-hero" data-hero>
+        <img src="${c.capa}" alt="" fetchpriority="high">
+        <div class="col-hero__txt hero__entra">
+          <p class="eyebrow" style="color:rgba(247,244,239,.8)">Coleção · peças únicas em ouro 18k</p>
+          <h1>${c.titulo}</h1>
+          <p>${esc(c.chamada)}</p>
+        </div>
+      </section>
+      <section class="secao" style="padding-bottom:60px">
+        <div class="wrap manifesto revela">
+          ${ESTRELA}
+          ${c.texto.map(t => `<p style="font-size:clamp(24px,2.6vw,36px)">${esc(t)}</p>`).join("")}
+          ${c.homenagem ? `<div class="assinatura">${esc(c.homenagem)}</div>` : ""}
+        </div>
+      </section>
+      <div class="wrap" id="listaColecao"></div>`;
+    lista($("#listaColecao"), P.filter(p => p.colecao === slug), { categorias: true });
+  }
+
+  function paginaJoias(cat) {
+    if (cat && !CATS.some(c => c.slug === cat)) return pagina404();
+    main.innerHTML = `
+      <section class="pagina-topo wrap">
+        <p class="eyebrow">Ouro 18k</p>
+        <h1>${cat ? catNome(cat) : "Todas as joias"}</h1>
+        <p>${cat ? "Peças únicas da coleção Old But Gold. Cada uma tem uma só unidade." : "Anéis, correntes, brincos e pulseiras em ouro amarelo e branco 18k."}</p>
+      </section>
+      <div class="wrap" id="listaJoias"></div>`;
+    lista($("#listaJoias"), P, { categorias: true, catInicial: cat });
+  }
+
+  function lista(alvo, base, op = {}) {
+    const estado = { cat: op.catInicial || "", ouro: "", ordem: "destaque" };
+    alvo.innerHTML = `
+      <div class="filtros">
+        <div class="chips" role="group" aria-label="Filtros">
+          ${op.categorias ? `<button class="chip" data-cat="">Todas</button>${CATS.filter(c => base.some(p => p.categoria === c.slug)).map(c => `<button class="chip" data-cat="${c.slug}">${c.nome}</button>`).join("")}` : ""}
+          <button class="chip" data-ouro="amarelo">Ouro amarelo</button>
+          <button class="chip" data-ouro="branco">Ouro branco</button>
+        </div>
+        <label class="ordenar">Ordenar
+          <select id="ordem">
+            <option value="destaque">Destaques</option>
+            <option value="menor">Menor preço</option>
+            <option value="maior">Maior preço</option>
+            <option value="peso">Maior peso em ouro</option>
+          </select>
+        </label>
+      </div>
+      <p class="contagem" id="contagem"></p>
+      <div class="grade" id="grade"></div>
+      <div style="height:120px"></div>`;
+    function aplicar() {
+      let l = base.filter(p => (!estado.cat || p.categoria === estado.cat) && (!estado.ouro || p.ouro === estado.ouro));
+      if (estado.ordem === "menor") l = [...l].sort((a, b) => a.preco - b.preco);
+      if (estado.ordem === "maior") l = [...l].sort((a, b) => b.preco - a.preco);
+      if (estado.ordem === "peso") l = [...l].sort((a, b) => b.peso - a.peso);
+      if (estado.ordem === "destaque") l = [...l].sort((a, b) => (a.vendida - b.vendida) || ((b.destaque ? 1 : 0) - (a.destaque ? 1 : 0)));
+      $("#grade", alvo).innerHTML = l.length ? l.map(card).join("") : `<div class="vazio" style="grid-column:1/-1">Nenhuma peça com esses filtros.</div>`;
+      $("#contagem", alvo).textContent = `${l.length} ${l.length === 1 ? "peça" : "peças"}`;
+      $$("[data-cat]", alvo).forEach(b => b.setAttribute("aria-pressed", String(b.dataset.cat === estado.cat)));
+      $$("[data-ouro]", alvo).forEach(b => b.setAttribute("aria-pressed", String(b.dataset.ouro === estado.ouro)));
+    }
+    alvo.addEventListener("click", e => {
+      const c = e.target.closest("[data-cat]"), o = e.target.closest("[data-ouro]");
+      if (c) { estado.cat = c.dataset.cat; aplicar(); }
+      if (o) { estado.ouro = estado.ouro === o.dataset.ouro ? "" : o.dataset.ouro; aplicar(); }
+    });
+    $("#ordem", alvo).addEventListener("change", e => { estado.ordem = e.target.value; aplicar(); });
+    aplicar();
+  }
+
+  function paginaProduto(id) {
+    const p = porId(id);
+    if (!p) return pagina404();
+    document.title = `${nomeCompleto(p)} · Ouro ${p.ouro} 18k | LAHUD`;
+    const col = COLS[p.colecao];
+    const fav = favoritos.includes(p.id);
+    const naSacola = sacola.includes(p.id);
+    const economia = p.mercado ? Math.round((1 - p.preco / p.mercado) * 100) : 0;
+    const msgReserva = `Olá! Tenho interesse na peça *${nomeCompleto(p)}* (${col.nome}), ouro ${p.ouro} 18k, ${brl(p.preco)}. Ela ainda está disponível?`;
+    const relacionados = P.filter(x => x.id !== p.id && !x.vendida && (x.categoria === p.categoria)).concat(P.filter(x => x.id !== p.id && !x.vendida && x.categoria !== p.categoria && x.destaque)).slice(0, 8);
+
+    main.innerHTML = `
+      <div class="wrap">
+        <nav class="trilha" aria-label="Você está em">
+          <a href="#/">Início</a><span>/</span><a href="#/colecao/${p.colecao}">${col.nome}</a><span>/</span><a href="#/joias/${p.categoria}">${catNome(p.categoria)}</a>
+        </nav>
+        <div class="produto">
+          <div class="galeria${p.fotos.length > 1 ? " galeria--2" : ""}">
+            ${p.fotos.map((f, i) => `<figure data-zoom="${f}"><img src="${f}" alt="${esc(nomeCompleto(p))}${i ? " em uso" : ""}" ${i ? 'loading="lazy"' : 'fetchpriority="high"'}></figure>`).join("")}
+          </div>
+          <div class="produto__info">
+            <p class="eyebrow">${col.nome} · ${catNome(p.categoria)}</p>
+            <h1>${esc(p.nome)}</h1>
+            ${p.variante ? `<div class="produto__variante">${esc(p.variante)}</div>` : ""}
+            <div class="produto__unica">${ESTRELA.replace('class="estrela"', 'class="estrela" style="width:14px;height:14px"')} ${p.vendida ? "Peça vendida" : "Peça única · sem reposição"}</div>
+
+            <div class="produto__preco">${brl(p.preco)}</div>
+            <div class="produto__parcela">${parcela(p.preco)}</div>
+
+            <div class="mercado">
+              ${p.mercado
+                ? `<span>Referência de mercado <s>${brl0(p.mercado)}</s></span><span class="economia">${economia}% abaixo</span>`
+                : `<span>Peça <strong>sem equivalente</strong> no mercado</span><span class="economia">Exclusiva</span>`}
+            </div>
+
+            ${p.vendida ? `<div class="vendida-aviso">Esta joia já encontrou sua nova história. Fale com a gente para conhecer peças semelhantes.</div>` : ""}
+
+            <div class="produto__acoes">
+              <div class="linha">
+                <button class="btn" id="btnAdicionar" ${p.vendida ? "disabled" : ""}>${naSacola ? "Ver na sacola" : "Adicionar à sacola"}</button>
+                <button class="btn-fav" data-fav="${p.id}" aria-pressed="${fav}" aria-label="Lista de desejos">${CORACAO}</button>
+              </div>
+              <a class="btn btn--claro" target="_blank" rel="noopener" href="${wa(msgReserva)}">${p.vendida ? "Pedir peça semelhante" : "Reservar pelo WhatsApp"}</a>
+            </div>
+
+            <div class="garantias">
+              <div><svg width="20" height="20" viewBox="0 0 24 24"><path d="M12 3 4 7v6c0 4 3.4 7.4 8 8 4.6-.6 8-4 8-8V7l-8-4Z" fill="none" stroke="currentColor" stroke-width="1.1"/></svg>Ouro 18k</div>
+              <div><svg width="20" height="20" viewBox="0 0 24 24"><path d="M12 2 13 11 22 12 13 13 12 22 11 13 2 12 11 11Z" fill="none" stroke="currentColor" stroke-width="1.1"/></svg>Peça única</div>
+              <div><svg width="20" height="20" viewBox="0 0 24 24"><path d="M21 12a9 9 0 1 1-3-6.7M21 4v5h-5" fill="none" stroke="currentColor" stroke-width="1.1"/></svg>${L.parcelas}x sem juros</div>
+            </div>
+
+            <div class="acordeao">
+              <details open><summary>Detalhes da peça</summary><div class="conteudo"><ul>${p.detalhes.map(d => `<li>${esc(d)}</li>`).join("")}</ul></div></details>
+              <details><summary>Sobre a coleção</summary><div class="conteudo"><p>${esc(col.texto.join(" "))}</p></div></details>
+              ${p.categoria === "aneis" ? `<details><summary>Tamanho do aro</summary><div class="conteudo"><p>O aro informado é o tamanho atual da peça. Ajustes podem ser avaliados pelo nosso ateliê, sob consulta. Não sabe sua medida? Chame no WhatsApp que te ensinamos a medir em casa.</p></div></details>` : ""}
+              <details><summary>Cuidados</summary><div class="conteudo"><p>Guarde separada das demais, em local seco. Evite perfumes, cremes, cloro e piscina. Limpe com flanela macia. <a class="link" href="#/cuidados" style="font-size:10px">Guia completo</a></p></div></details>
+              <details><summary>Entrega e trocas</summary><div class="conteudo"><p>Envio segurado ou retirada combinada com a nossa equipe. Prazos, frete e política de trocas são confirmados no atendimento pelo WhatsApp.</p></div></details>
+            </div>
+          </div>
+        </div>
+      </div>
+      ${relacionados.length ? `
+      <section class="secao secao--pedra">
+        <div class="wrap">
+          <div class="secao__topo revela"><p class="eyebrow">Old But Gold</p><h2>Você também pode <em>amar</em></h2></div>
+          ${trilho(relacionados, "trilhoRel")}
+        </div>
+      </section>` : ""}`;
+
+    $("#btnAdicionar").addEventListener("click", () => {
+      if (sacola.includes(p.id)) { renderSacola(); abrirSacola(); return; }
+      adicionar(p.id);
+      $("#btnAdicionar").textContent = "Ver na sacola";
+    });
+    ativarTrilhos();
+  }
+
+  function paginaFavoritos() {
+    const l = favoritos.map(porId).filter(Boolean);
+    main.innerHTML = `
+      <section class="pagina-topo wrap"><p class="eyebrow">Sua seleção</p><h1>Lista de <em>desejos</em></h1>
+      <p>As peças que você salvou ficam guardadas neste navegador.</p></section>
+      <div class="wrap" style="padding-bottom:120px">
+        ${l.length
+          ? `<div class="grade">${l.map(card).join("")}</div>
+             <div style="text-align:center;margin-top:60px"><a class="btn btn--claro" target="_blank" rel="noopener" href="${wa("Olá! Estas são as peças da minha lista de desejos LAHUD:\n" + l.map(p => "• " + nomeCompleto(p) + " (" + brl(p.preco) + ")").join("\n"))}">Enviar lista pelo WhatsApp</a></div>`
+          : `<div class="vazio">${ESTRELA}<h2>Sua lista está vazia</h2><p>Toque no coração das peças para guardá-las aqui.</p><a href="#/colecao/old-but-gold" class="btn">Ver peças</a></div>`}
+      </div>`;
+  }
+
+  function paginaBusca(termo) {
+    const t = norm(termo).trim();
+    const l = P.filter(p => norm([p.nome, p.variante, catNome(p.categoria), "ouro " + p.ouro, COLS[p.colecao].nome, ...p.detalhes].join(" ")).includes(t));
+    main.innerHTML = `
+      <section class="pagina-topo wrap"><p class="eyebrow">Busca</p><h1>“${esc(termo)}”</h1><p>${l.length} ${l.length === 1 ? "resultado" : "resultados"}</p></section>
+      <div class="wrap" style="padding-bottom:120px">
+        ${l.length ? `<div class="grade">${l.map(card).join("")}</div>` : `<div class="vazio"><h2>Nada encontrado</h2><p>Tente “anel”, “diamante”, “corrente” ou “ouro branco”.</p><a href="#/joias" class="btn">Ver todas as joias</a></div>`}
+      </div>`;
+  }
+
+  const TEXTOS = {
+    historia: {
+      eyebrow: "Nossa história", titulo: "Joias que contam <em>histórias</em>",
+      corpo: `
+        <p>A LAHUD nasce de uma história de família. De Maria e José, bisavós da nossa fundadora, que ergueram com as próprias mãos a casa onde tudo começou. E de Luzia, a voz que manteve essa memória viva por gerações.</p>
+        <p class="destaque">“Há presenças que permanecem. Nos valores que herdamos, nas histórias que contamos e nas lembranças que escolhemos guardar.”</p>
+        <p>Por isso, para nós, joia nunca é só adorno. Cada peça é produzida em ouro 18k, em pequenas séries, com design autoral de Verônica, pensada para carregar significado e ser passada adiante.</p>
+        <h2>Como trabalhamos</h2>
+        <ul>
+          <li><strong>Ouro 18k</strong> em todas as peças.</li>
+          <li><strong>Pequenas séries</strong>: produzimos pouco, com atenção a cada detalhe.</li>
+          <li><strong>Design autoral</strong>: coleções que nascem de memórias reais, como os azulejos da casa de Maria e José.</li>
+          <li><strong>Atendimento próximo</strong>: do primeiro contato à entrega, falando diretamente com a gente.</li>
+        </ul>
+        <h2>Nossas coleções</h2>
+        <p><a class="link" href="#/colecao/maria-e-luzia">Maria &amp; Luzia</a> &nbsp;&nbsp; <a class="link" href="#/colecao/old-but-gold">Old But Gold</a></p>`
+    },
+    personalizacao: {
+      eyebrow: "Serviços", titulo: "Personalização",
+      corpo: `
+        <p class="rascunho">Texto-base para validar com a LAHUD (conteúdo do destaque “Personalização” do Instagram).</p>
+        <p>Algumas histórias pedem uma joia só delas. Na LAHUD você pode:</p>
+        <ul>
+          <li>Gravar nomes, datas ou iniciais nas peças que permitem gravação.</li>
+          <li>Ajustar o tamanho do aro de anéis.</li>
+          <li>Criar uma joia nova a partir de uma ideia, um desenho ou uma memória.</li>
+          <li>Transformar joias de família em peças novas, preservando o que elas significam.</li>
+        </ul>
+        <p>Cada projeto começa com uma conversa. Conte sua história pelo WhatsApp e montamos a proposta com você.</p>
+        <p><a class="btn" target="_blank" rel="noopener" href="${wa("Olá! Gostaria de conversar sobre uma joia personalizada.")}">Conversar sobre meu projeto</a></p>`
+    },
+    cuidados: {
+      eyebrow: "Guia", titulo: "Cuidados com suas joias",
+      corpo: `
+        <p>O ouro 18k é nobre e durável. Com alguns cuidados simples, suas joias LAHUD atravessam gerações.</p>
+        <h2>No dia a dia</h2>
+        <ul>
+          <li>Coloque as joias por último, depois de perfume, cremes e maquiagem.</li>
+          <li>Retire para nadar (cloro e água salgada), praticar esportes e fazer limpeza doméstica.</li>
+          <li>Evite contato com produtos químicos e álcool.</li>
+        </ul>
+        <h2>Para guardar</h2>
+        <ul>
+          <li>Guarde cada peça separada, de preferência na embalagem LAHUD, para não riscar.</li>
+          <li>Correntes devem ficar fechadas e esticadas, para não embaraçar.</li>
+          <li>Local seco e longe do sol.</li>
+        </ul>
+        <h2>Limpeza</h2>
+        <ul>
+          <li>Use flanela macia e seca após o uso.</li>
+          <li>Para limpeza leve: água morna com sabão neutro e escova macia. Seque bem.</li>
+          <li>Peças com diamantes e pedras: faça revisão das garras periodicamente com a gente.</li>
+        </ul>`
+    },
+    atendimento: null,
+    privacidade: {
+      eyebrow: "Rascunho", titulo: "Privacidade",
+      corpo: `<p class="rascunho">Rascunho para revisão jurídica (LGPD).</p>
+        <p>Este site não tem cadastro e não armazena dados pessoais em servidor. A sacola e a lista de desejos ficam salvas apenas no seu navegador. Ao finalizar um pedido, você é levado ao WhatsApp com a mensagem pronta, e a conversa segue as políticas do WhatsApp.</p>
+        <p>Os dados que você enviar no atendimento (nome, endereço, telefone) são usados apenas para concluir o pedido e a entrega.</p>`
+    },
+    trocas: {
+      eyebrow: "Rascunho", titulo: "Trocas e devoluções",
+      corpo: `<p class="rascunho">Rascunho para revisão jurídica (CDC). Ajustar à política real da LAHUD.</p>
+        <p>Compras feitas a distância podem ser desistidas em até 7 dias corridos após o recebimento (art. 49 do Código de Defesa do Consumidor), com a peça sem sinais de uso e na embalagem original.</p>
+        <p>Peças personalizadas ou ajustadas sob medida têm condições próprias, combinadas antes da produção.</p>`
+    }
+  };
+
+  function paginaTexto(chave) {
+    if (chave === "atendimento") return paginaAtendimento();
+    const t = TEXTOS[chave];
+    main.innerHTML = `
+      <section class="pagina-topo wrap"><p class="eyebrow">${t.eyebrow}</p><h1>${t.titulo}</h1></section>
+      <article class="wrap texto-longo">${t.corpo}</article>
+      ${chave === "historia" ? `<section class="split escuro"><div class="split__img"><img src="assets/img/joias/bracelete-modelo.jpg" alt="" loading="lazy"></div><div class="split__texto revela"><p class="eyebrow">Old But Gold</p><h2>Peças para <em>atravessar</em> o tempo</h2><p>${esc(COLS["old-but-gold"].chamada)}</p><a class="btn btn--branco" href="#/colecao/old-but-gold">Ver a coleção</a></div></section>` : ""}`;
+  }
+
+  function paginaAtendimento() {
+    main.innerHTML = `
+      <section class="pagina-topo wrap"><p class="eyebrow">Facilidades</p><h1>Atendimento <em>LAHUD</em></h1>
+        <p>Toda compra é acompanhada de perto pela nossa equipe. Escolha como prefere falar com a gente.</p></section>
+      <div class="wrap contatos">
+        <a class="contato" target="_blank" rel="noopener" href="${wa("Olá! Gostaria de atendimento da LAHUD.")}">${ESTRELA}<h3>WhatsApp</h3><p>Dúvidas, reservas, medidas e pagamento. ${esc(L.whatsappTexto)}</p><span class="link">Conversar</span></a>
+        <a class="contato" target="_blank" rel="noopener" href="${wa("Olá! Gostaria de agendar um atendimento personalizado.")}">${ESTRELA}<h3>Atendimento agendado</h3><p>Uma conversa dedicada para escolher presentes, alianças ou projetos sob medida.</p><span class="link">Agendar</span></a>
+        <a class="contato" target="_blank" rel="noopener" href="${L.instagram}">${ESTRELA}<h3>Instagram</h3><p>Lançamentos, bastidores do ateliê e histórias das nossas clientes. ${esc(L.instagramUser)}</p><span class="link">Seguir</span></a>
+      </div>
+      <section class="secao secao--pedra"><div class="wrap">
+        <div class="secao__topo"><p class="eyebrow">Perguntas frequentes</p><h2>Como <em>comprar</em></h2></div>
+        <div class="acordeao" style="max-width:780px;margin:0 auto">
+          <details open><summary>Como faço meu pedido?</summary><div class="conteudo">Adicione as peças à sacola e toque em “Finalizar pelo WhatsApp”. A mensagem chega pronta para a nossa equipe, que confirma a disponibilidade, o pagamento e a entrega.</div></details>
+          <details><summary>Quais as formas de pagamento?</summary><div class="conteudo">Parcelamento em até ${L.parcelas}x sem juros. Demais formas são combinadas no atendimento.</div></details>
+          <details><summary>As peças Old But Gold são novas?</summary><div class="conteudo">São joias únicas, selecionadas uma a uma por sua beleza e permanência. Cada uma tem sua própria história, e a descrição de cada peça traz todos os detalhes. Na dúvida, fale com a gente.</div></details>
+          <details><summary>Posso ajustar o tamanho de um anel?</summary><div class="conteudo">Sim, sob consulta. Avaliamos cada peça para garantir que o ajuste preserve o desenho original.</div></details>
+          <details><summary>Vocês enviam para todo o Brasil?</summary><div class="conteudo">Combinamos o envio segurado ou a retirada no atendimento.</div></details>
+        </div>
+      </div></section>`;
+  }
+
+  function pagina404() {
+    main.innerHTML = `<div class="wrap vazio" style="padding:140px 0">${ESTRELA}<h2>Página não encontrada</h2><p>Talvez essa joia já tenha encontrado sua nova história.</p><a href="#/" class="btn">Voltar ao início</a></div>`;
+  }
+
+  // --------------------------------------------------------------- sacola
+  function renderSacola() {
+    const itens = sacola.map(porId).filter(Boolean);
+    const corpo = $("#drawerCorpo"), rodape = $("#drawerRodape");
+    $("#drawerTitulo").textContent = itens.length ? `Sua sacola (${itens.length})` : "Sua sacola";
+    if (!itens.length) {
+      corpo.innerHTML = `<div class="sacola-vazia">${ESTRELA}<p>Sua sacola está vazia.</p><a href="#/colecao/old-but-gold" class="btn" data-fechar-drawer>Descobrir peças</a></div>`;
+      rodape.innerHTML = ""; rodape.hidden = true; return;
+    }
+    rodape.hidden = false;
+    corpo.innerHTML = itens.map(p => `
+      <div class="item">
+        <a href="#/joia/${p.id}" data-fechar-drawer><img src="${p.fotos[0]}" alt=""></a>
+        <div>
+          <div class="item__nome">${esc(nomeCompleto(p))}</div>
+          <div class="item__meta">${p.detalhes[0]}<br>Peça única</div>
+          <div class="item__linha"><span>${brl(p.preco)}</span><button class="item__remover" data-remover="${p.id}">Remover</button></div>
+        </div>
+      </div>`).join("") + `
+      <div style="padding:22px 0 8px">
+        <label class="presente"><input type="checkbox" id="chkPresente" ${embrulho.ativo ? "checked" : ""}> <span>É para presente<br><small style="color:var(--suave)">Avise e cuidamos da embalagem e do cartão.</small></span></label>
+        <label class="campo" id="campoMsg" ${embrulho.ativo ? "" : "hidden"}><span>Mensagem do cartão</span><textarea id="msgPresente" rows="2" maxlength="200" placeholder="Escreva sua mensagem">${esc(embrulho.mensagem)}</textarea></label>
+      </div>`;
+    const total = itens.reduce((s, p) => s + p.preco, 0);
+    rodape.innerHTML = `
+      <div class="resumo">
+        <div><span>Subtotal</span><span>${brl(total)}</span></div>
+        <div><span>Entrega</span><span>a combinar</span></div>
+        <div class="total"><span>Total</span><span>${brl(total)}</span></div>
+        <div style="color:var(--suave);font-size:13px;justify-content:flex-end">${parcela(total)}</div>
+      </div>
+      <label class="campo"><span>Seu nome</span><input id="nomeCliente" autocomplete="name" placeholder="Como podemos te chamar?"></label>
+      <a class="btn btn--bloco" id="btnFinalizar" target="_blank" rel="noopener" href="#">Finalizar pelo WhatsApp</a>
+      <p class="nota">A disponibilidade de cada peça é confirmada pela nossa equipe antes do pagamento.</p>`;
+    const atualizarLink = () => {
+      const nome = ($("#nomeCliente") || {}).value || "";
+      const linhas = itens.map(p => `• ${nomeCompleto(p)} (${p.detalhes[0]}): ${brl(p.preco)}`);
+      const txt = [
+        `Olá, LAHUD! ${nome ? "Sou " + nome.trim() + " e g" : "G"}ostaria de finalizar este pedido:`,
+        "", ...linhas, "",
+        `*Total: ${brl(total)}* (${parcela(total)})`,
+        embrulho.ativo ? `\n🎁 É para presente.${embrulho.mensagem ? ' Cartão: "' + embrulho.mensagem.trim() + '"' : ""}` : "",
+        "\nPodem confirmar a disponibilidade e as formas de pagamento e entrega?"
+      ].join("\n");
+      $("#btnFinalizar").href = wa(txt);
+    };
+    atualizarLink();
+    $("#nomeCliente").addEventListener("input", atualizarLink);
+    $("#chkPresente").addEventListener("change", e => { embrulho.ativo = e.target.checked; $("#campoMsg").hidden = !e.target.checked; salvar(); atualizarLink(); });
+    $("#msgPresente").addEventListener("input", e => { embrulho.mensagem = e.target.value; salvar(); atualizarLink(); });
+  }
+  let focoAntes;
+  function abrirSacola() {
+    focoAntes = document.activeElement;
+    renderSacola(); $("#drawer").hidden = false; document.body.style.overflow = "hidden";
+    setTimeout(() => $("#drawer [data-fechar-drawer].icon-btn").focus(), 50);
+  }
+  function fecharSacola() { $("#drawer").hidden = true; document.body.style.overflow = ""; focoAntes && focoAntes.focus && focoAntes.focus(); }
+
+  // --------------------------------------------------------------- fixos
+  function montarFixos() {
+    if (L.anuncio) { const a = $("#anuncio"); a.hidden = false; a.innerHTML = `${esc(L.anuncio)} <a href="${wa("Olá! Quero saber mais sobre a Best & Black November.")}" target="_blank" rel="noopener">Saiba mais</a>`; }
+    $("#whatsFloat").href = wa("Olá! Vim pelo site da LAHUD e gostaria de atendimento.");
+    $("#rodape").innerHTML = `
+      <div class="wrap">
+        <div class="footer__news">
+          ${ESTRELA}
+          <h2>Clientes <em>VIP</em></h2>
+          <p>Lançamentos em primeira mão, catálogos exclusivos e condições especiais no nosso grupo de clientes.</p>
+          <a class="btn btn--branco" target="_blank" rel="noopener" href="${wa("Olá! Quero fazer parte do grupo de clientes VIP da LAHUD.")}">Quero participar</a>
+        </div>
+        <div class="footer__grid">
+          <div>
+            <a href="#/" class="logo">LAHUD</a>
+            <p style="max-width:300px;margin:0;font-size:14px">${esc(L.descricao)} Design autoral de ${esc(L.designer)}.</p>
+          </div>
+          <div><h3>Coleções</h3><ul>
+            <li><a href="#/colecao/old-but-gold">Old But Gold</a></li><li><a href="#/colecao/maria-e-luzia">Maria &amp; Luzia</a></li>
+            ${CATS.map(c => `<li><a href="#/joias/${c.slug}">${c.nome}</a></li>`).join("")}</ul></div>
+          <div><h3>LAHUD</h3><ul>
+            <li><a href="#/historia">Nossa história</a></li><li><a href="#/personalizacao">Personalização</a></li>
+            <li><a href="#/cuidados">Cuidados</a></li><li><a href="#/atendimento">Atendimento</a></li></ul></div>
+          <div><h3>Contato</h3><ul>
+            <li><a target="_blank" rel="noopener" href="${wa("Olá!")}">WhatsApp ${esc(L.whatsappTexto)}</a></li>
+            <li><a target="_blank" rel="noopener" href="${L.instagram}">Instagram ${esc(L.instagramUser)}</a></li>
+            <li><a href="#/privacidade">Privacidade</a></li><li><a href="#/trocas">Trocas e devoluções</a></li></ul></div>
+        </div>
+        <div class="footer__base"><span>© ${new Date().getFullYear()} LAHUD · Joias que contam histórias</span><span>${esc(L.avisoDemo)}</span></div>
+      </div>`;
+  }
+
+  function bannerCookies() {
+    if (armazenamento.ler("lahud_cookies", null)) return;
+    const d = document.createElement("div");
+    d.className = "cookies"; d.setAttribute("role", "dialog"); d.setAttribute("aria-label", "Aviso de cookies");
+    d.innerHTML = `<p>Usamos apenas o armazenamento do seu navegador para guardar sua sacola e lista de desejos. <a href="#/privacidade">Privacidade</a></p>
+      <div><button class="btn" data-ck="ok">Entendi</button></div>`;
+    document.body.appendChild(d);
+    d.addEventListener("click", e => { if (e.target.dataset.ck) { armazenamento.gravar("lahud_cookies", { ok: true, em: Date.now() }); d.remove(); } });
+  }
+
+  // --------------------------------------------------------------- efeitos
+  let io;
+  function revelar() {
+    io && io.disconnect();
+    io = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) { e.target.classList.add("visivel"); io.unobserve(e.target); } }), { rootMargin: "0px 0px -8% 0px" });
+    $$(".revela").forEach(el => io.observe(el));
+  }
+  function headerHero() {
+    const temHero = !!$("[data-hero]");
+    const topo = window.scrollY < 40;
+    document.body.classList.toggle("sobre-hero", temHero && topo && $("#busca").hidden);
+  }
+
+  // --------------------------------------------------------------- roteador
+  function roteador() {
+    const h = decodeURIComponent(location.hash.replace(/^#\/?/, ""));
+    const [r, a] = h.split("/");
+    document.title = "LAHUD | Joias que contam histórias · Ouro 18k";
+    if (!r) paginaInicial();
+    else if (r === "colecao") paginaColecao(a);
+    else if (r === "joias") paginaJoias(a);
+    else if (r === "joia") paginaProduto(a);
+    else if (r === "favoritos") paginaFavoritos();
+    else if (r === "busca") paginaBusca(h.slice(6));
+    else if (r in TEXTOS) paginaTexto(r);
+    else pagina404();
+    $$(".nav a").forEach(n => n.toggleAttribute("aria-current", h.startsWith(n.dataset.nav) || (n.dataset.nav === "joias" && r === "joia")));
+    $$(".nav a[aria-current]").forEach(n => n.setAttribute("aria-current", "page"));
+    window.scrollTo({ top: 0, behavior: "instant" });
+    headerHero(); revelar();
+  }
+
+  // --------------------------------------------------------------- eventos
+  function iniciar() {
+    if ("scrollRestoration" in history) history.scrollRestoration = "manual";
+    montarFixos(); badges(); roteador(); bannerCookies();
+    window.addEventListener("hashchange", () => { fecharMenu(); roteador(); });
+    window.addEventListener("scroll", headerHero, { passive: true });
+
+    document.addEventListener("click", e => {
+      const fav = e.target.closest("[data-fav]");
+      if (fav) { e.preventDefault(); alternarDesejo(fav.dataset.fav); return; }
+      const rem = e.target.closest("[data-remover]");
+      if (rem) { remover(rem.dataset.remover); return; }
+      if (e.target.closest("[data-fechar-drawer]")) { fecharSacola(); return; }
+      if (e.target.closest("[data-fechar-menu]")) { fecharMenu(); return; }
+      const seta = e.target.closest("[data-trilho]");
+      if (seta) { const t = document.getElementById(seta.dataset.trilho); t.scrollBy({ left: t.clientWidth * 0.8 * +seta.dataset.dir, behavior: "smooth" }); return; }
+      const z = e.target.closest("[data-zoom]");
+      if (z) {
+        const lb = document.createElement("div"); lb.className = "lightbox"; lb.setAttribute("role", "dialog");
+        lb.innerHTML = `<img src="${z.dataset.zoom}" alt=""><button class="icon-btn" aria-label="Fechar"><svg width="26" height="26" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18" stroke="currentColor" stroke-width="1.3"/></svg></button>`;
+        lb.addEventListener("click", () => lb.remove()); document.body.appendChild(lb);
+      }
+    });
+    $("#btnSacola").addEventListener("click", abrirSacola);
+    $("#btnMenu").addEventListener("click", () => { $("#menuMobile").hidden = false; $("#btnMenu").setAttribute("aria-expanded", "true"); document.body.style.overflow = "hidden"; });
+    $("#btnBusca").addEventListener("click", () => { $("#busca").hidden = false; headerHero(); $("#campoBusca").focus(); });
+    $("#btnFecharBusca").addEventListener("click", () => { $("#busca").hidden = true; headerHero(); });
+    $("#formBusca").addEventListener("submit", e => {
+      e.preventDefault(); const t = $("#campoBusca").value.trim(); if (!t) return;
+      $("#busca").hidden = true; location.hash = "#/busca/" + encodeURIComponent(t);
+    });
+    document.addEventListener("keydown", e => {
+      if (e.key !== "Escape") return;
+      if ($(".lightbox")) $(".lightbox").remove();
+      else if (!$("#drawer").hidden) fecharSacola();
+      else if (!$("#menuMobile").hidden) fecharMenu();
+      else if (!$("#busca").hidden) { $("#busca").hidden = true; headerHero(); }
+    });
+  }
+  function fecharMenu() { $("#menuMobile").hidden = true; $("#btnMenu").setAttribute("aria-expanded", "false"); if ($("#drawer").hidden) document.body.style.overflow = ""; }
+
+  iniciar();
+})();

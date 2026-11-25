@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>LAHUD | Joias que contam histórias · Ouro 18k</title>
+  <meta name="description" content="LAHUD: joias em ouro 18k produzidas em pequenas séries, com design autoral. Coleções Old But Gold e Maria & Luzia.">
+  <meta name="theme-color" content="#1c1a17">
+  <!-- Protótipo: não aparecer no Google. Remover quando o site for oficial. -->
+  <meta name="robots" content="noindex, nofollow, noarchive">
+  <meta name="referrer" content="strict-origin-when-cross-origin">
+  <meta property="og:title" content="LAHUD · Joias que contam histórias">
+  <meta property="og:description" content="Joias em ouro 18k, em pequenas séries, com design autoral.">
+  <meta property="og:image" content="assets/img/joias/colar-modelo-2.jpg">
+  <link rel="icon" href="assets/img/favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+  <a class="skip" href="#conteudo">Pular para o conteúdo</a>
+
+  <div class="anuncio" id="anuncio" hidden></div>
+
+  <header class="header" id="header">
+    <div class="header__row">
+      <div class="header__left">
+        <button class="icon-btn header__menu" id="btnMenu" aria-label="Abrir menu" aria-expanded="false" aria-controls="menuMobile">
+          <svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 8h18M3 16h18" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+        </button>
+        <nav class="nav nav--left" aria-label="Coleções">
+          <a href="#/colecao/old-but-gold" data-nav="old-but-gold">Old But Gold</a>
+          <a href="#/colecao/maria-e-luzia" data-nav="maria-e-luzia">Maria &amp; Luzia</a>
+          <a href="#/joias" data-nav="joias">Joias</a>
+        </nav>
+      </div>
+
+      <a href="#/" class="logo" aria-label="LAHUD - página inicial">LAHUD</a>
+
+      <div class="header__right">
+        <nav class="nav nav--right" aria-label="Institucional">
+          <a href="#/historia" data-nav="historia">Nossa história</a>
+          <a href="#/atendimento" data-nav="atendimento">Atendimento</a>
+        </nav>
+        <button class="icon-btn" id="btnBusca" aria-label="Buscar">
+          <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5" fill="none" stroke="currentColor" stroke-width="1.3"/><path d="m20 20-4.2-4.2" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+        </button>
+        <a class="icon-btn" href="#/favoritos" aria-label="Lista de desejos">
+          <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20s-7.5-4.6-7.5-10.2A4.2 4.2 0 0 1 12 7.3a4.2 4.2 0 0 1 7.5 2.5C19.5 15.4 12 20 12 20Z" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></svg>
+          <span class="badge" id="badgeFav" hidden>0</span>
+        </a>
+        <button class="icon-btn" id="btnSacola" aria-label="Abrir sacola">
+          <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 8.5h14l-1.1 11.5H6.1L5 8.5Z" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/><path d="M9 8.5V7a3 3 0 0 1 6 0v1.5" fill="none" stroke="currentColor" stroke-width="1.3"/></svg>
+          <span class="badge" id="badgeSacola" hidden>0</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Busca -->
+  <div class="busca" id="busca" hidden>
+    <form class="busca__form" id="formBusca" role="search">
+      <label for="campoBusca" class="sr-only">Buscar joias</label>
+      <input id="campoBusca" type="search" placeholder="Buscar: anel, corrente, diamante, ouro branco…" autocomplete="off">
+      <button type="button" class="icon-btn" id="btnFecharBusca" aria-label="Fechar busca">
+        <svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+      </button>
+    </form>
+  </div>
+
+  <!-- Menu mobile -->
+  <div class="mobile-menu" id="menuMobile" hidden>
+    <div class="mobile-menu__overlay" data-fechar-menu></div>
+    <div class="mobile-menu__panel">
+      <div class="mobile-menu__head">
+        <span class="logo logo--sm">LAHUD</span>
+        <button class="icon-btn" data-fechar-menu aria-label="Fechar menu">
+          <svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+        </button>
+      </div>
+      <ul class="mobile-menu__list">
+        <li><a href="#/colecao/old-but-gold">Old But Gold</a></li>
+        <li><a href="#/colecao/maria-e-luzia">Maria &amp; Luzia</a></li>
+        <li><a href="#/joias">Todas as joias</a></li>
+        <li><a href="#/joias/aneis">Anéis</a></li>
+        <li><a href="#/joias/correntes">Correntes</a></li>
+        <li><a href="#/joias/brincos">Brincos</a></li>
+        <li><a href="#/joias/pulseiras">Pulseiras</a></li>
+        <li class="sep"><a href="#/historia">Nossa história</a></li>
+        <li><a href="#/personalizacao">Personalização</a></li>
+        <li><a href="#/cuidados">Cuidados</a></li>
+        <li><a href="#/atendimento">Atendimento</a></li>
+      </ul>
+    </div>
+  </div>
+
+  <main id="conteudo" tabindex="-1"></main>
+
+  <footer class="footer" id="rodape"></footer>
+
+  <!-- Sacola lateral -->
+  <div class="drawer" id="drawer" hidden>
+    <div class="drawer__overlay" data-fechar-drawer></div>
+    <aside class="drawer__panel" role="dialog" aria-modal="true" aria-labelledby="drawerTitulo">
+      <div class="drawer__head">
+        <h2 id="drawerTitulo">Sua sacola</h2>
+        <button class="icon-btn" data-fechar-drawer aria-label="Fechar sacola">
+          <svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+        </button>
+      </div>
+      <div class="drawer__body" id="drawerCorpo"></div>
+      <div class="drawer__foot" id="drawerRodape"></div>
+    </aside>
+  </div>
+
+  <a class="whats-float" id="whatsFloat" target="_blank" rel="noopener" aria-label="Falar com a LAHUD no WhatsApp">
+    <svg width="26" height="26" viewBox="0 0 32 32" aria-hidden="true"><path fill="currentColor" d="M16 3a13 13 0 0 0-11.2 19.6L3 29l6.6-1.7A13 13 0 1 0 16 3Zm0 23.6c-2 0-4-.6-5.7-1.6l-.4-.2-3.9 1 1-3.8-.3-.4A10.6 10.6 0 1 1 16 26.6Zm5.8-7.9c-.3-.2-1.9-.9-2.2-1-.3-.1-.5-.2-.7.2l-1 1.2c-.2.2-.4.2-.7.1a8.7 8.7 0 0 1-4.3-3.8c-.3-.6.3-.5.9-1.7.1-.2 0-.4 0-.6l-1-2.4c-.3-.6-.5-.5-.7-.5h-.6c-.2 0-.6.1-.9.4-.3.3-1.2 1.2-1.2 2.9s1.2 3.4 1.4 3.6c.2.2 2.4 3.7 5.9 5.2 2.2.9 3 1 4.1.8.7-.1 1.9-.8 2.2-1.5.3-.7.3-1.4.2-1.5-.1-.1-.3-.2-.6-.4Z"/></svg>
+  </a>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script src="assets/js/config.js"></script>
+  <script src="assets/js/produtos.js"></script>
+  <script src="assets/js/app.js"></script>
+</body>
+</html>
