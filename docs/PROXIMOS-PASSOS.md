@@ -7,7 +7,7 @@
 3. **Textos**: Minha LAHUD, Facilidades, Personalização, Cuidados, Nosso trabalho e Clientes vieram dos destaques do Instagram (lidos em 25/11/2026). O destaque “Nossa história” é um vídeo narrado: a página Nossa história usa as legendas dos posts. Conferir se os depoimentos (Manu, Eria, Juliana) podem aparecer no site.
 4. **Maria & Luzia**: enviar fotos e preços das peças (ex.: Pulseira Paulo) para virar vitrine como a Old But Gold.
 5. **Logo**: hoje o “LAHUD” é tipográfico. Enviar o arquivo do logo (SVG/PNG) para trocar.
-6. **Políticas**: Privacidade e Trocas são rascunhos para revisão jurídica.
+6. **Políticas**: Termos de uso, Política de privacidade, Cookies e Trocas são rascunhos para revisão jurídica. Completar razão social, CNPJ e endereço.
 7. **Prazos**: Facilidades fala em 20 dias úteis (peças feitas à mão) e Minha LAHUD em até 30 dias corridos. Confirmar o prazo das peças Old But Gold, que já estão prontas.
 
 ## Próximas fases (mesmas opções do Couro & Lar)

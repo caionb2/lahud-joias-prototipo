@@ -529,10 +529,73 @@
     },
     atendimento: null,
     privacidade: {
-      eyebrow: "Rascunho", titulo: "Privacidade",
-      corpo: `<p class="rascunho">Rascunho para revisão jurídica (LGPD).</p>
-        <p>Este site não tem cadastro e não armazena dados pessoais em servidor. A sacola e a lista de desejos ficam salvas apenas no seu navegador. Ao finalizar um pedido, você é levado ao WhatsApp com a mensagem pronta, e a conversa segue as políticas do WhatsApp.</p>
-        <p>Os dados que você enviar no atendimento (nome, endereço, telefone) são usados apenas para concluir o pedido e a entrega.</p>`
+      eyebrow: "Informações legais", titulo: "Política de <em>privacidade</em>",
+      corpo: `<p class="rascunho">Rascunho para revisão jurídica (Lei Geral de Proteção de Dados, Lei 13.709/2018). Completar com razão social, CNPJ e e-mail do responsável.</p>
+        <h2>Resumo</h2>
+        <p>Este site não tem cadastro, login, formulário enviado a servidor, ferramentas de análise ou anúncios. Nós não coletamos nem armazenamos dados pessoais por meio dele.</p>
+        <h2>O que fica no seu navegador</h2>
+        <ul>
+          <li>Sacola, lista de desejos, mensagem de presente e suas preferências de acessibilidade ficam salvas apenas no seu aparelho (armazenamento local do navegador).</li>
+          <li>Nós não temos acesso a essas informações. Você pode apagá-las a qualquer momento limpando os dados do site no navegador.</li>
+        </ul>
+        <h2>Pedidos pelo WhatsApp</h2>
+        <p>Ao finalizar um pedido, você é levado ao WhatsApp com a mensagem pronta. A partir daí, os dados que você nos enviar (nome, telefone, endereço de entrega e dados para emissão de nota) são usados apenas para atender, concluir o pedido, entregar e prestar o suporte das joias. A conversa também segue a política de privacidade do WhatsApp.</p>
+        <h2>Serviços de terceiros</h2>
+        <p>As fontes tipográficas são carregadas do Google Fonts, que recebe dados técnicos de acesso (como o endereço IP), conforme a política do Google. Os links para Instagram e WhatsApp levam a serviços com políticas próprias.</p>
+        <h2>Seus direitos</h2>
+        <p>Você pode pedir a qualquer momento confirmação, acesso, correção ou exclusão dos seus dados de atendimento, pelo WhatsApp ${esc(L.whatsappTexto)}.</p>`
+    },
+    termos: {
+      eyebrow: "Informações legais", titulo: "Termos de <em>uso</em>",
+      corpo: `<p class="rascunho">Rascunho para revisão jurídica. Completar com razão social, CNPJ e endereço.</p>
+        <h2>Sobre este site</h2>
+        <p>Este site apresenta as joias e coleções da LAHUD. Ao usá-lo, você concorda com estes termos.</p>
+        <h2>Pedidos, preços e disponibilidade</h2>
+        <ul>
+          <li>A sacola do site não é uma compra concluída: ela gera uma mensagem de pedido que é confirmada pela nossa equipe pelo WhatsApp.</li>
+          <li>As peças Old But Gold são únicas. A disponibilidade é confirmada no atendimento, antes do pagamento.</li>
+          <li>Os valores podem sofrer alterações de acordo com a cotação do ouro. Vale o valor confirmado no atendimento.</li>
+          <li>A “referência de mercado” é uma estimativa de valor de peças equivalentes, apenas informativa.</li>
+        </ul>
+        <h2>Pagamento, entrega e trocas</h2>
+        <p>Formas de pagamento, prazos e condições de troca estão em <a class="link" href="#/atendimento" style="font-size:10px">Atendimento</a> e <a class="link" href="#/trocas" style="font-size:10px">Trocas e devoluções</a>.</p>
+        <h2>Propriedade intelectual</h2>
+        <p>Os desenhos das joias, fotos, textos, marca LAHUD e identidade visual são protegidos por direitos autorais e não podem ser copiados ou reproduzidos sem autorização.</p>
+        <h2>Contato</h2>
+        <p>WhatsApp ${esc(L.whatsappTexto)} · Instagram ${esc(L.instagramUser)}</p>`
+    },
+    cookies: {
+      eyebrow: "Informações legais", titulo: "Cookies",
+      corpo: `<p class="rascunho">Rascunho para revisão jurídica.</p>
+        <p>Este site <strong>não usa cookies de rastreamento, de publicidade ou de análise</strong>.</p>
+        <p>Usamos apenas o armazenamento local do seu navegador, que é essencial para o site funcionar:</p>
+        <ul>
+          <li><strong>Sacola</strong>: as peças que você adicionou.</li>
+          <li><strong>Lista de desejos</strong>: as peças que você salvou.</li>
+          <li><strong>Presente</strong>: a mensagem do cartão.</li>
+          <li><strong>Acessibilidade</strong>: as opções “Reduzir movimento” e “Ativar contraste”.</li>
+          <li><strong>Aviso de cookies</strong>: para não mostrar este aviso de novo.</li>
+        </ul>
+        <p>Essas informações ficam só no seu aparelho. Para apagá-las, limpe os dados do site nas configurações do navegador, ou use o botão abaixo.</p>
+        <p><button class="btn btn--claro" data-limpar-dados>Apagar dados deste site</button></p>`
+    },
+    acessibilidade: {
+      eyebrow: "Para todas as pessoas", titulo: "Acessibilidade",
+      corpo: `<p>Queremos que todas as pessoas possam conhecer e escolher uma joia LAHUD com conforto.</p>
+        <h2>Recursos do site</h2>
+        <ul>
+          <li><strong>Reduzir movimento</strong>: desliga animações, zoom das fotos e transições. Ativado automaticamente se o seu aparelho já pedir menos movimento.</li>
+          <li><strong>Ativar contraste</strong>: textos mais escuros, linhas e bordas mais fortes e links sublinhados.</li>
+          <li>Navegação completa pelo teclado, com foco visível, atalho “Pular para o conteúdo” e tecla Esc para fechar menus e a sacola.</li>
+          <li>Textos alternativos nas fotos das joias e estrutura de títulos para leitores de tela.</li>
+          <li>Layout que se adapta a celular, tablet e computador, e respeita o zoom do navegador.</li>
+        </ul>
+        <div class="toggles toggles--pagina" role="group" aria-label="Acessibilidade">
+          <button class="toggle" role="switch" data-pref="movimento" aria-checked="false"><span class="toggle__trilho" aria-hidden="true"></span>Reduzir movimento</button>
+          <button class="toggle" role="switch" data-pref="contraste" aria-checked="false"><span class="toggle__trilho" aria-hidden="true"></span>Ativar contraste</button>
+        </div>
+        <h2>Encontrou alguma barreira?</h2>
+        <p>Conte para a gente pelo WhatsApp ${esc(L.whatsappTexto)}. Também atendemos por mensagem de voz ou texto, como for melhor para você.</p>`
     },
     trocas: {
       eyebrow: "Rascunho", titulo: "Trocas e devoluções",
@@ -675,17 +738,50 @@
           <div><h3>Contato</h3><ul>
             <li><a target="_blank" rel="noopener" href="${wa("Olá!")}">WhatsApp ${esc(L.whatsappTexto)}</a></li>
             <li><a target="_blank" rel="noopener" href="${L.instagram}">Instagram ${esc(L.instagramUser)}</a></li>
-            <li><a href="#/privacidade">Privacidade</a></li><li><a href="#/trocas">Trocas e devoluções</a></li></ul></div>
+            <li><a href="#/trocas">Trocas e devoluções</a></li></ul></div>
         </div>
+        <div class="footer__a11y">
+          <span class="footer__pais"><svg width="14" height="14" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.3"/><path d="M3 12h18M12 3c2.5 2.6 3.8 5.6 3.8 9s-1.3 6.4-3.8 9c-2.5-2.6-3.8-5.6-3.8-9S9.5 5.6 12 3Z" fill="none" stroke="currentColor" stroke-width="1.3"/></svg> Brasil · Português</span>
+          <div class="toggles" role="group" aria-label="Acessibilidade">
+            <button class="toggle" role="switch" data-pref="movimento" aria-checked="false"><span class="toggle__trilho" aria-hidden="true"></span>Reduzir movimento</button>
+            <button class="toggle" role="switch" data-pref="contraste" aria-checked="false"><span class="toggle__trilho" aria-hidden="true"></span>Ativar contraste</button>
+          </div>
+        </div>
+        <nav class="footer__legal" aria-label="Informações legais">
+          <a href="#/termos">Termos de uso</a><span aria-hidden="true">-</span><a href="#/privacidade">Política de privacidade</a><span aria-hidden="true">-</span><a href="#/cookies">Cookies</a><span aria-hidden="true">-</span><a href="#/acessibilidade">Acessibilidade</a>
+        </nav>
         <div class="footer__base"><span>© ${new Date().getFullYear()} LAHUD · Joias que contam histórias</span><span>${esc(L.avisoDemo)}</span></div>
       </div>`;
+    aplicarPrefs();
+  }
+
+  // --------------------------------------------------------------- acessibilidade
+  // Preferências guardadas no navegador. Na primeira visita, seguem o sistema (prefers-reduced-motion / prefers-contrast).
+  function lerPrefs() {
+    const salvo = armazenamento.ler("lahud_a11y", null);
+    if (salvo) return salvo;
+    return {
+      movimento: matchMedia("(prefers-reduced-motion: reduce)").matches,
+      contraste: matchMedia("(prefers-contrast: more)").matches
+    };
+  }
+  function aplicarPrefs() {
+    const p = lerPrefs();
+    document.documentElement.classList.toggle("reduzir-movimento", !!p.movimento);
+    document.documentElement.classList.toggle("alto-contraste", !!p.contraste);
+    $$("[data-pref]").forEach(b => b.setAttribute("aria-checked", String(!!p[b.dataset.pref])));
+  }
+  function alternarPref(chave) {
+    const p = lerPrefs(); p[chave] = !p[chave];
+    armazenamento.gravar("lahud_a11y", p); aplicarPrefs();
+    aviso(chave === "movimento" ? (p.movimento ? "Movimento reduzido" : "Animações ativadas") : (p.contraste ? "Contraste ativado" : "Contraste padrão"));
   }
 
   function bannerCookies() {
     if (armazenamento.ler("lahud_cookies", null)) return;
     const d = document.createElement("div");
     d.className = "cookies"; d.setAttribute("role", "dialog"); d.setAttribute("aria-label", "Aviso de cookies");
-    d.innerHTML = `<p>Usamos apenas o armazenamento do seu navegador para guardar sua sacola e lista de desejos. <a href="#/privacidade">Privacidade</a></p>
+    d.innerHTML = `<p>Usamos apenas o armazenamento do seu navegador para guardar sua sacola, lista de desejos e preferências. Sem rastreamento. <a href="#/cookies">Saiba mais</a></p>
       <div><button class="btn" data-ck="ok">Entendi</button></div>`;
     document.body.appendChild(d);
     d.addEventListener("click", e => { if (e.target.dataset.ck) { armazenamento.gravar("lahud_cookies", { ok: true, em: Date.now() }); d.remove(); } });
@@ -720,7 +816,7 @@
     $$(".nav a").forEach(n => n.toggleAttribute("aria-current", h.startsWith(n.dataset.nav) || (n.dataset.nav === "joias" && r === "joia")));
     $$(".nav a[aria-current]").forEach(n => n.setAttribute("aria-current", "page"));
     window.scrollTo({ top: 0, behavior: "instant" });
-    headerHero(); revelar();
+    headerHero(); revelar(); aplicarPrefs();
   }
 
   // --------------------------------------------------------------- eventos
@@ -731,6 +827,9 @@
     window.addEventListener("scroll", headerHero, { passive: true });
 
     document.addEventListener("click", e => {
+      if (e.target.closest("[data-limpar-dados]")) { ["lahud_sacola","lahud_desejos","lahud_presente","lahud_a11y","lahud_cookies"].forEach(k => { try { localStorage.removeItem(k); } catch {} }); sacola = []; favoritos = []; embrulho = { ativo: false, mensagem: "" }; badges(); aplicarPrefs(); aviso("Dados deste site apagados"); return; }
+      const pref = e.target.closest("[data-pref]");
+      if (pref) { alternarPref(pref.dataset.pref); return; }
       const fav = e.target.closest("[data-fav]");
       if (fav) { e.preventDefault(); alternarDesejo(fav.dataset.fav); return; }
       const rem = e.target.closest("[data-remover]");

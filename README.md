@@ -14,6 +14,7 @@ Mesma base do protótipo Couro & Lar: **o cliente monta a sacola no site e envia
 - Sacola com opção de presente + mensagem do cartão → mensagem pronta no WhatsApp (11) 91840-2288.
 - Busca, filtros (categoria, ouro amarelo/branco) e ordenação (preço, peso em ouro).
 - Páginas com o conteúdo dos destaques do Instagram: Nossa história (com Nosso trabalho e depoimentos de Clientes), Minha LAHUD (joia sob medida), Cuidados, Atendimento/Facilidades (10x, 5% OFF no Pix, frete grátis, troca em 7 dias úteis, suporte vitalício). Privacidade e Trocas são rascunhos.
+- Rodapé com acessibilidade (Reduzir movimento, Ativar contraste) e links de Termos de uso, Política de privacidade, Cookies e Acessibilidade.
 - Faixa da Best & Black November (liga/desliga em `config.js`).
 
 ## Como editar
