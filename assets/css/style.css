@@ -626,3 +626,18 @@ h1 em, h2 em, h3 em, .manifesto p em, .citacao__txt p em, .col-hero__txt h1 em {
 /* Foto de capa clara: reforça a sombra para o texto e o menu ficarem legíveis */
 .hero::after { background: linear-gradient(180deg, rgba(20,18,16,.55) 0%, rgba(20,18,16,.12) 26%, rgba(20,18,16,.18) 50%, rgba(20,18,16,.72) 100%); }
 .hero__conteudo h1, .hero__conteudo p { text-shadow: 0 1px 24px rgba(0,0,0,.25); }
+
+/* ======================= Logo oficial e cor da marca ======================= */
+/* Marrom do logo LAHUD: #43281B. Substitui o carvão como cor escura do site. */
+:root { --carvao: #2b1a12; --carvao-2: #3a2419; --texto: #34241b; --marca: #43281b; --suave: #7a6a5f; --linha: rgba(67,40,27,.14); }
+.logo { display: inline-flex; align-items: center; padding: 0; letter-spacing: 0; line-height: 0; }
+.logo img { height: 22px; width: auto; display: block; }
+.logo .logo__claro { display: none; }
+body.sobre-hero .header .logo__escuro { display: none; }
+body.sobre-hero .header .logo__claro { display: block; }
+.logo--sm img { height: 18px; }
+.footer .logo img { height: 26px; }
+.estrela { color: var(--ouro); }
+.secao--escura .estrela, .split.escuro .estrela, .footer .estrela, .citacao .estrela { color: var(--ouro-claro); }
+@media (max-width: 820px) { .logo img { height: 18px; } }
+.alto-contraste .logo__escuro { filter: brightness(.6); }

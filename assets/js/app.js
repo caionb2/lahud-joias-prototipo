@@ -44,7 +44,7 @@
     return { k, p, preco, desc, acab, tam, aro };
   }
 
-  const ESTRELA = `<svg class="estrela" viewBox="0 0 40 40" aria-hidden="true"><path d="M20 2 21.2 18.8 38 20 21.2 21.2 20 38 18.8 21.2 2 20 18.8 18.8Z" fill="currentColor"/><path d="m20 20 7-7M20 20l-7 7M20 20l7 7M20 20l-7-7" stroke="currentColor" stroke-width=".6"/></svg>`;
+  const ESTRELA = `<svg class="estrela" viewBox="-52 -52 104 104" aria-hidden="true"><path d="M0.00 -50.00 L1.19 -2.86 L35.36 -35.36 L2.86 -1.19 L50.00 -0.00 L2.86 1.19 L35.36 35.36 L1.19 2.86 L0.00 50.00 L-1.19 2.86 L-35.36 35.36 L-2.86 1.19 L-50.00 0.00 L-2.86 -1.19 L-35.36 -35.36 L-1.19 -2.86 Z" fill="currentColor"/></svg>`;
   const CORACAO = `<svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20s-7.5-4.6-7.5-10.2A4.2 4.2 0 0 1 12 7.3a4.2 4.2 0 0 1 7.5 2.5C19.5 15.4 12 20 12 20Z" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></svg>`;
 
   const armazenamento = {
@@ -817,7 +817,7 @@
         </div>
         <div class="footer__grid">
           <div>
-            <a href="#/" class="logo">LAHUD</a>
+            <a href="#/" class="logo" aria-label="LAHUD - página inicial"><img src="assets/img/logo-lahud-claro.png" alt="LAHUD" width="866" height="204"></a>
             <p style="max-width:300px;margin:0;font-size:14px">${esc(L.descricao)} Design autoral de ${esc(L.designer)}.</p>
           </div>
           <div><h3>Coleções</h3><ul>
