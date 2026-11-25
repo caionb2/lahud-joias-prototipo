@@ -4,11 +4,11 @@
 
 1. **Disponibilidade**: o catálogo Old But Gold é de 28/06/2026. Posts de setembro falam em “últimos anéis”. Marcar `vendida: true` nas peças já vendidas.
 2. **Preços**: confirmar os valores e se a Best & Black November (até 15% OFF + 5% VIP) vale para Old But Gold.
-3. **Textos**: Nossa história, Personalização, Cuidados e Atendimento foram escritos com base na bio, nas legendas do Instagram e no PDF. Os destaques do Instagram (Minha LAHUD, Clientes, Facilidades, Personalização, Cuidados, Nosso trabalho) exigem login e **não foram lidos**: revisar com o conteúdo deles.
+3. **Textos**: Minha LAHUD, Facilidades, Personalização, Cuidados, Nosso trabalho e Clientes vieram dos destaques do Instagram (lidos em 25/11/2026). O destaque “Nossa história” é um vídeo narrado: a página Nossa história usa as legendas dos posts. Conferir se os depoimentos (Manu, Eria, Juliana) podem aparecer no site.
 4. **Maria & Luzia**: enviar fotos e preços das peças (ex.: Pulseira Paulo) para virar vitrine como a Old But Gold.
 5. **Logo**: hoje o “LAHUD” é tipográfico. Enviar o arquivo do logo (SVG/PNG) para trocar.
 6. **Políticas**: Privacidade e Trocas são rascunhos para revisão jurídica.
-7. **Entrega e pagamento**: confirmar regras de envio (seguro, prazos) e formas de pagamento além do 10x.
+7. **Prazos**: Facilidades fala em 20 dias úteis (peças feitas à mão) e Minha LAHUD em até 30 dias corridos. Confirmar o prazo das peças Old But Gold, que já estão prontas.
 
 ## Próximas fases (mesmas opções do Couro & Lar)
 

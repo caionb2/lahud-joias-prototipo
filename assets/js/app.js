@@ -206,9 +206,11 @@
           <div><strong>18k</strong><span>Ouro em todas as peças</span></div>
           <div><strong>${L.parcelas}x</strong><span>Sem juros</span></div>
           <div><strong>Autoral</strong><span>Design de ${esc(L.designer)}</span></div>
-          <div><strong>1 a 1</strong><span>Atendimento personalizado</span></div>
+          <div><strong>Grátis</strong><span>Frete para todo o Brasil</span></div>
         </div>
       </section>
+
+      ${blocoClientes()}
 
       <section class="secao secao--pedra">
         <div class="wrap">
@@ -239,12 +241,29 @@
       </section>`;
   }
 
+  // Depoimentos reais (destaque "Clientes" do Instagram)
+  function blocoClientes() {
+    const d = [
+      ["Encomenda mais que especial. A designer e ourives mais perfeita do mundo! Obrigada por entregar carinho em forma de joia.", "Manu"],
+      ["Tão feliz com a minha primeira LAHUD.", "Eria"],
+      ["Minhas encomendas ficaram prontas. Que capricho!", "Juliana"]
+    ];
+    return `
+      <section class="secao secao--escura">
+        <div class="wrap">
+          <div class="secao__topo revela"><p class="eyebrow">Clientes</p><h2>Carinho em forma de <em>joia</em></h2>
+            <p>Cada LAHUD chega na nossa embalagem, com cartão escrito à mão.</p></div>
+          <div class="depoimentos revela">${d.map(([t, n]) => `<figure>${ESTRELA}<blockquote>“${t}”</blockquote><figcaption>${n}</figcaption></figure>`).join("")}</div>
+        </div>
+      </section>`;
+  }
+
   function blocoServicos() {
     const itens = [
-      ["Personalização", "Gravações, ajustes de aro e criação a partir da sua história ou de joias de família.", "#/personalizacao", "Saiba mais"],
-      ["Facilidades", `Pagamento em até ${L.parcelas}x sem juros e atendimento individual do primeiro contato à entrega.`, "#/atendimento", "Atendimento"],
-      ["Cuidados", "Como guardar, limpar e conservar suas joias de ouro 18k para que durem gerações.", "#/cuidados", "Ver cuidados"],
-      ["Clientes VIP", "Grupo exclusivo com lançamentos em primeira mão e condições especiais.", wa("Olá! Quero fazer parte do grupo de clientes VIP da LAHUD."), "Quero participar"]
+      ["Minha LAHUD", "Você traz a ideia, a história e a inspiração. Nós transformamos esse sentimento em uma joia única.", "#/personalizacao", "Como funciona"],
+      ["Facilidades", `${L.parcelas}x sem juros no cartão, ${L.descontoPix}% OFF no Pix, frete grátis para todo o Brasil e troca fácil.`, "#/atendimento", "Ver facilidades"],
+      ["Cuidados", "Como usar e guardar suas joias para que as marcas do tempo contem só a sua história.", "#/cuidados", "Ver cuidados"],
+      ["Suporte vitalício", "Manutenção sempre disponível e atendimento exclusivo com nossas especialistas.", wa("Olá! Preciso de ajuda com a manutenção de uma joia LAHUD."), "Falar com a gente"]
     ];
     return `<div class="servicos revela">${itens.map(([t, d, href, cta]) => `
       <div class="servico">${ESTRELA}<h3>${t}</h3><p>${d}</p>
@@ -373,7 +392,7 @@
             <div class="produto__unica">${ESTRELA.replace('class="estrela"', 'class="estrela" style="width:14px;height:14px"')} ${p.vendida ? "Peça vendida" : "Peça única · sem reposição"}</div>
 
             <div class="produto__preco">${brl(p.preco)}</div>
-            <div class="produto__parcela">${parcela(p.preco)}</div>
+            <div class="produto__parcela">${parcela(p.preco)}<br>ou ${brl(p.preco * (1 - L.descontoPix / 100))} no Pix ou transferência (${L.descontoPix}% OFF)</div>
 
             <div class="mercado">
               ${p.mercado
@@ -393,16 +412,20 @@
 
             <div class="garantias">
               <div><svg width="20" height="20" viewBox="0 0 24 24"><path d="M12 3 4 7v6c0 4 3.4 7.4 8 8 4.6-.6 8-4 8-8V7l-8-4Z" fill="none" stroke="currentColor" stroke-width="1.1"/></svg>Ouro 18k</div>
-              <div><svg width="20" height="20" viewBox="0 0 24 24"><path d="M12 2 13 11 22 12 13 13 12 22 11 13 2 12 11 11Z" fill="none" stroke="currentColor" stroke-width="1.1"/></svg>Peça única</div>
-              <div><svg width="20" height="20" viewBox="0 0 24 24"><path d="M21 12a9 9 0 1 1-3-6.7M21 4v5h-5" fill="none" stroke="currentColor" stroke-width="1.1"/></svg>${L.parcelas}x sem juros</div>
+              <div><svg width="20" height="20" viewBox="0 0 24 24"><path d="M3 7h11v9H3zM14 10h4l3 3v3h-7M6.5 18.5a1.5 1.5 0 1 0 0-.01M17.5 18.5a1.5 1.5 0 1 0 0-.01" fill="none" stroke="currentColor" stroke-width="1.1"/></svg>Frete grátis</div>
+              <div><svg width="20" height="20" viewBox="0 0 24 24"><path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18l3 3 6.3-6.3a4 4 0 0 0 5.4-5.4l-2.5 2.5-2.5-.5-.5-2.5Z" fill="none" stroke="currentColor" stroke-width="1.1"/></svg>Suporte vitalício</div>
             </div>
 
             <div class="acordeao">
               <details open><summary>Detalhes da peça</summary><div class="conteudo"><ul>${p.detalhes.map(d => `<li>${esc(d)}</li>`).join("")}</ul></div></details>
               <details><summary>Sobre a coleção</summary><div class="conteudo"><p>${esc(col.texto.join(" "))}</p></div></details>
-              ${p.categoria === "aneis" ? `<details><summary>Tamanho do aro</summary><div class="conteudo"><p>O aro informado é o tamanho atual da peça. Ajustes podem ser avaliados pelo nosso ateliê, sob consulta. Não sabe sua medida? Chame no WhatsApp que te ensinamos a medir em casa.</p></div></details>` : ""}
-              <details><summary>Cuidados</summary><div class="conteudo"><p>Guarde separada das demais, em local seco. Evite perfumes, cremes, cloro e piscina. Limpe com flanela macia. <a class="link" href="#/cuidados" style="font-size:10px">Guia completo</a></p></div></details>
-              <details><summary>Entrega e trocas</summary><div class="conteudo"><p>Envio segurado ou retirada combinada com a nossa equipe. Prazos, frete e política de trocas são confirmados no atendimento pelo WhatsApp.</p></div></details>
+              ${p.categoria === "aneis" ? `<details><summary>Tamanho do aro</summary><div class="conteudo"><p>O aro informado é o tamanho atual da peça. Ajustes podem ser avaliados pela nossa ourives, sob consulta. Não sabe sua medida? Chame no WhatsApp que te ensinamos a medir em casa.</p></div></details>` : ""}
+              <details><summary>Cuidados</summary><div class="conteudo"><p>Guarde cada joia separada das demais, nunca solta na bolsa ou na gaveta. Retire para esportes de impacto, piscina e mar. <a class="link" href="#/cuidados" style="font-size:10px">Guia completo</a></p></div></details>
+              <details><summary>Entrega, trocas e suporte</summary><div class="conteudo"><ul>
+                <li>Entrega segura e <strong>frete grátis para todo o Brasil</strong>, por nossa responsabilidade.</li>
+                <li>Troca fácil, sem burocracia, em até 7 dias úteis após o recebimento.</li>
+                <li>Suporte vitalício para manutenção.</li>
+                <li>Enviada na embalagem LAHUD, com cartão escrito à mão.</li></ul></div></details>
             </div>
           </div>
         </div>
@@ -452,53 +475,57 @@
       corpo: `
         <p>A LAHUD nasce de uma história de família. De Maria e José, bisavós da nossa fundadora, que ergueram com as próprias mãos a casa onde tudo começou. E de Luzia, a voz que manteve essa memória viva por gerações.</p>
         <p class="destaque">“Há presenças que permanecem. Nos valores que herdamos, nas histórias que contamos e nas lembranças que escolhemos guardar.”</p>
-        <p>Por isso, para nós, joia nunca é só adorno. Cada peça é produzida em ouro 18k, em pequenas séries, com design autoral de Verônica, pensada para carregar significado e ser passada adiante.</p>
-        <h2>Como trabalhamos</h2>
+        <p>Por isso, para nós, joia nunca é só adorno. Cada peça nasce do desenho e das mãos de Verônica, designer e ourives da LAHUD, pensada para carregar significado e ser passada adiante.</p>
+        <h2>Nosso trabalho</h2>
+        <p>As joias LAHUD são todas feitas artesanalmente em ouro 18k. Por isso, cada peça é única, gerada com muito amor e dedicação.</p>
+        <p>São joias eternas: diferente de peças banhadas, o ouro maciço não desbota com o tempo. É durável e resistente o suficiente para ser usado todos os dias.</p>
         <ul>
-          <li><strong>Ouro 18k</strong> em todas as peças.</li>
-          <li><strong>Pequenas séries</strong>: produzimos pouco, com atenção a cada detalhe.</li>
-          <li><strong>Design autoral</strong>: coleções que nascem de memórias reais, como os azulejos da casa de Maria e José.</li>
-          <li><strong>Atendimento próximo</strong>: do primeiro contato à entrega, falando diretamente com a gente.</li>
+          <li><strong>Ouro 18k com matéria-prima certificada</strong>: 75% de ouro puro e 25% de ligas metálicas (prata, cobre e paládio), que dão a resistência que o ouro 24k, muito maleável, não tem.</li>
+          <li><strong>Tonalidades</strong>: ouro amarelo, champanhe, branco ou rosé.</li>
+          <li><strong>Pequenas séries e design autoral</strong>: coleções que nascem de memórias reais, como os azulejos da casa de Maria e José.</li>
+          <li><strong>Atendimento exclusivo</strong>: do primeiro contato à manutenção, com suporte vitalício.</li>
         </ul>
+        <p style="font-size:13px;color:var(--suave)">O valor das peças pode sofrer alterações de acordo com a cotação do ouro.</p>
         <h2>Nossas coleções</h2>
         <p><a class="link" href="#/colecao/maria-e-luzia">Maria &amp; Luzia</a> &nbsp;&nbsp; <a class="link" href="#/colecao/old-but-gold">Old But Gold</a></p>`
     },
     personalizacao: {
-      eyebrow: "Serviços", titulo: "Personalização",
+      eyebrow: "Projeto", titulo: "Minha <em>LAHUD</em>",
       corpo: `
-        <p class="rascunho">Texto-base para validar com a LAHUD (conteúdo do destaque “Personalização” do Instagram).</p>
-        <p>Algumas histórias pedem uma joia só delas. Na LAHUD você pode:</p>
-        <ul>
-          <li>Gravar nomes, datas ou iniciais nas peças que permitem gravação.</li>
-          <li>Ajustar o tamanho do aro de anéis.</li>
-          <li>Criar uma joia nova a partir de uma ideia, um desenho ou uma memória.</li>
-          <li>Transformar joias de família em peças novas, preservando o que elas significam.</li>
-        </ul>
-        <p>Cada projeto começa com uma conversa. Conte sua história pelo WhatsApp e montamos a proposta com você.</p>
-        <p><a class="btn" target="_blank" rel="noopener" href="${wa("Olá! Gostaria de conversar sobre uma joia personalizada.")}">Conversar sobre meu projeto</a></p>`
+        <p>Lado a lado com as nossas coleções, a criação de joias personalizadas sempre fez parte da nossa essência, crescendo de forma orgânica ao longo do tempo.</p>
+        <p>Hoje, ocupando um papel cada vez mais importante, sentimos a necessidade de dar forma a esse processo. Assim nasceu o projeto Minha LAHUD: um espaço onde suas ideias ganham forma e se transformam em joias únicas.</p>
+        <p class="destaque">Transforme sua ideia, desejo e sentimento em uma joia única, com o design e o acabamento que definem a LAHUD.</p>
+        <h2>Como funciona</h2>
+        <ol class="passos">
+          <li><strong>Você traz a ideia, a história e a inspiração.</strong> E nós transformamos esse sentimento em joia. No esboço, além do desenho, colocamos as informações técnicas: peso final aproximado, altura, largura, espessura e tamanho da pedra. Desenhamos quantos modelos forem necessários.</li>
+          <li><strong>Orçamento e produção.</strong> Após a aprovação do design, enviamos o valor final da joia. Você realiza o pagamento e iniciamos a produção. Como o processo é autoral e artesanal, com cada detalhe feito à mão, o prazo de envio é de até 30 dias corridos após o pagamento.</li>
+          <li><strong>LAHUDs criadas em conjunto.</strong> Colares, pingentes, argolas e anéis com iniciais, pedras e formas escolhidas por cada cliente. Se ficou com vontade de criar a sua, basta mandar uma mensagem.</li>
+        </ol>
+        <h2>Personalização das coleções</h2>
+        <p>Também personalizamos joias das nossas coleções, desde que estejam em linha com os modelos do portfólio. A cada pedido podemos alterar espessura e largura, trocar a tonalidade do ouro, tirar ou incluir pedras e até substituir o tipo de pedra.</p>
+        <p>Compartilhe suas referências para uma avaliação prévia. Trabalhamos sempre com design autoral e não realizamos criações que contrariem a nossa essência.</p>
+        <p style="margin-top:34px"><a class="btn" target="_blank" rel="noopener" href="${wa("Olá! Quero criar a minha LAHUD. Posso contar a minha ideia?")}">Criar a minha LAHUD</a></p>`
     },
     cuidados: {
       eyebrow: "Guia", titulo: "Cuidados com suas joias",
       corpo: `
-        <p>O ouro 18k é nobre e durável. Com alguns cuidados simples, suas joias LAHUD atravessam gerações.</p>
-        <h2>No dia a dia</h2>
+        <p>Todas as joias sofrem mudanças conforme são usadas. As de superfície polida ficam, com o tempo, mais foscas; as foscas vão se tornando polidas. Nenhum metal é duro o suficiente para não ganhar marcas pessoais de uso.</p>
+        <p class="destaque">São com essas marcas que as joias vão escrevendo a sua história. Mas é importante diferenciar marcas de uso de marcas de descuido.</p>
+        <h2>O uso das joias</h2>
         <ul>
-          <li>Coloque as joias por último, depois de perfume, cremes e maquiagem.</li>
-          <li>Retire para nadar (cloro e água salgada), praticar esportes e fazer limpeza doméstica.</li>
-          <li>Evite contato com produtos químicos e álcool.</li>
+          <li><strong>Durante o esporte</strong>: em atividades com risco de impacto, deixe sua joia guardada. Na musculação, por exemplo, barras e pesos podem amassar seu anel.</li>
+          <li><strong>Piscina ou mar</strong>: nosso corpo retrai no frio. Se o anel estiver um pouco frouxo, ele pode cair na água e se perder. O mesmo vale para pulseiras e colares longos.</li>
+          <li><strong>Pedras</strong>: por mais duras que sejam, se caírem podem lascar ou até quebrar. Tenha cuidado no manuseio.</li>
         </ul>
-        <h2>Para guardar</h2>
+        <h2>Como guardá-las</h2>
         <ul>
-          <li>Guarde cada peça separada, de preferência na embalagem LAHUD, para não riscar.</li>
-          <li>Correntes devem ficar fechadas e esticadas, para não embaraçar.</li>
-          <li>Local seco e longe do sol.</li>
+          <li>Evite o atrito com outras joias ou objetos que possam raspar, riscar, amassar ou danificar a peça.</li>
+          <li>Pedras e metais têm durezas diferentes e podem arranhar entre si. Guarde cada peça separada: <strong>nunca</strong> deixe sua joia solta na bolsa, na gaveta ou num porta-joias com várias peças.</li>
+          <li>Se costuma tirar a joia para dormir, tomar banho ou cozinhar, coloque-a sempre no mesmo lugar, para não esquecer ou, pior, perder.</li>
         </ul>
-        <h2>Limpeza</h2>
-        <ul>
-          <li>Use flanela macia e seca após o uso.</li>
-          <li>Para limpeza leve: água morna com sabão neutro e escova macia. Seque bem.</li>
-          <li>Peças com diamantes e pedras: faça revisão das garras periodicamente com a gente.</li>
-        </ul>`
+        <h2>Suporte vitalício</h2>
+        <p>Nosso suporte para manutenção é vitalício. Siga as dicas acima e fale com a gente sempre que tiver qualquer dúvida.</p>
+        <p><a class="btn btn--claro" target="_blank" rel="noopener" href="${wa("Olá! Tenho uma dúvida sobre os cuidados com a minha joia LAHUD.")}">Tirar uma dúvida</a></p>`
     },
     atendimento: null,
     privacidade: {
@@ -509,9 +536,10 @@
     },
     trocas: {
       eyebrow: "Rascunho", titulo: "Trocas e devoluções",
-      corpo: `<p class="rascunho">Rascunho para revisão jurídica (CDC). Ajustar à política real da LAHUD.</p>
-        <p>Compras feitas a distância podem ser desistidas em até 7 dias corridos após o recebimento (art. 49 do Código de Defesa do Consumidor), com a peça sem sinais de uso e na embalagem original.</p>
-        <p>Peças personalizadas ou ajustadas sob medida têm condições próprias, combinadas antes da produção.</p>`
+      corpo: `<p class="rascunho">Rascunho para revisão jurídica (CDC).</p>
+        <p><strong>Troca fácil</strong>: sem burocracia, em até 7 dias úteis após o recebimento do pedido, com a peça sem sinais de uso e na embalagem original.</p>
+        <p>O prazo também atende ao direito de arrependimento de compras feitas a distância (art. 49 do Código de Defesa do Consumidor).</p>
+        <p>Peças personalizadas (projeto Minha LAHUD ou alterações em peças das coleções) não entram na troca fácil, porque são feitas especialmente para você.</p>`
     }
   };
 
@@ -521,13 +549,24 @@
     main.innerHTML = `
       <section class="pagina-topo wrap"><p class="eyebrow">${t.eyebrow}</p><h1>${t.titulo}</h1></section>
       <article class="wrap texto-longo">${t.corpo}</article>
-      ${chave === "historia" ? `<section class="split escuro"><div class="split__img"><img src="assets/img/joias/bracelete-modelo.jpg" alt="" loading="lazy"></div><div class="split__texto revela"><p class="eyebrow">Old But Gold</p><h2>Peças para <em>atravessar</em> o tempo</h2><p>${esc(COLS["old-but-gold"].chamada)}</p><a class="btn btn--branco" href="#/colecao/old-but-gold">Ver a coleção</a></div></section>` : ""}`;
+      ${chave === "historia" ? blocoClientes() : ""}
+      ${chave === "historia" ? `<section class="split"><div class="split__img"><img src="assets/img/joias/bracelete-modelo.jpg" alt="" loading="lazy"></div><div class="split__texto revela"><p class="eyebrow">Old But Gold</p><h2>Peças para <em>atravessar</em> o tempo</h2><p>${esc(COLS["old-but-gold"].chamada)}</p><a class="btn" href="#/colecao/old-but-gold">Ver a coleção</a></div></section>` : ""}`;
   }
 
   function paginaAtendimento() {
     main.innerHTML = `
       <section class="pagina-topo wrap"><p class="eyebrow">Facilidades</p><h1>Atendimento <em>LAHUD</em></h1>
-        <p>Toda compra é acompanhada de perto pela nossa equipe. Escolha como prefere falar com a gente.</p></section>
+        <p>Toda compra é acompanhada de perto pela nossa equipe, do primeiro contato à manutenção.</p></section>
+      <div class="wrap facilidades">
+        ${[
+          ["Pagamento e descontos", `Pix, crédito, débito e transferência. ${L.parcelas}x sem juros no cartão e ${L.descontoPix}% OFF no Pix e na transferência.`],
+          ["Entrega segura e gratuita", "A responsabilidade da entrega é toda nossa, e o frete é grátis para todo o Brasil."],
+          ["Troca fácil", "Sem burocracia, em até 7 dias úteis após o recebimento do pedido (exceto peças personalizadas)."],
+          ["Matéria-prima certificada", "Todas as joias são feitas em ouro 18k com matéria-prima certificada."],
+          ["Suporte e manutenção", "Nosso suporte é vitalício e está sempre disponível para manutenções."],
+          ["Atendimento exclusivo", "Tire suas dúvidas e faça sugestões conversando com nossas especialistas."]
+        ].map(([t, d], i) => `<div class="facilidade"><span>0${i + 1}</span><h3>${t}</h3><p>${d}</p></div>`).join("")}
+      </div>
       <div class="wrap contatos">
         <a class="contato" target="_blank" rel="noopener" href="${wa("Olá! Gostaria de atendimento da LAHUD.")}">${ESTRELA}<h3>WhatsApp</h3><p>Dúvidas, reservas, medidas e pagamento. ${esc(L.whatsappTexto)}</p><span class="link">Conversar</span></a>
         <a class="contato" target="_blank" rel="noopener" href="${wa("Olá! Gostaria de agendar um atendimento personalizado.")}">${ESTRELA}<h3>Atendimento agendado</h3><p>Uma conversa dedicada para escolher presentes, alianças ou projetos sob medida.</p><span class="link">Agendar</span></a>
@@ -537,10 +576,11 @@
         <div class="secao__topo"><p class="eyebrow">Perguntas frequentes</p><h2>Como <em>comprar</em></h2></div>
         <div class="acordeao" style="max-width:780px;margin:0 auto">
           <details open><summary>Como faço meu pedido?</summary><div class="conteudo">Adicione as peças à sacola e toque em “Finalizar pelo WhatsApp”. A mensagem chega pronta para a nossa equipe, que confirma a disponibilidade, o pagamento e a entrega.</div></details>
-          <details><summary>Quais as formas de pagamento?</summary><div class="conteudo">Parcelamento em até ${L.parcelas}x sem juros. Demais formas são combinadas no atendimento.</div></details>
+          <details><summary>Quais as formas de pagamento?</summary><div class="conteudo">Pix, crédito, débito e transferência. Até ${L.parcelas}x sem juros no cartão, ou ${L.descontoPix}% de desconto no Pix e na transferência.</div></details>
           <details><summary>As peças Old But Gold são novas?</summary><div class="conteudo">São joias únicas, selecionadas uma a uma por sua beleza e permanência. Cada uma tem sua própria história, e a descrição de cada peça traz todos os detalhes. Na dúvida, fale com a gente.</div></details>
           <details><summary>Posso ajustar o tamanho de um anel?</summary><div class="conteudo">Sim, sob consulta. Avaliamos cada peça para garantir que o ajuste preserve o desenho original.</div></details>
-          <details><summary>Vocês enviam para todo o Brasil?</summary><div class="conteudo">Combinamos o envio segurado ou a retirada no atendimento.</div></details>
+          <details><summary>Vocês enviam para todo o Brasil?</summary><div class="conteudo">Sim, com frete grátis e entrega segura por nossa responsabilidade. Peças produzidas à mão têm prazo de 20 dias úteis a partir do pagamento; projetos Minha LAHUD, até 30 dias corridos.</div></details>
+          <details><summary>Posso criar uma joia do zero?</summary><div class="conteudo">Pode! É o projeto <a class="link" href="#/personalizacao" style="font-size:10px">Minha LAHUD</a>: você traz a ideia e a história, e nós desenhamos a joia com você.</div></details>
         </div>
       </div></section>`;
   }
@@ -569,16 +609,17 @@
         </div>
       </div>`).join("") + `
       <div style="padding:22px 0 8px">
-        <label class="presente"><input type="checkbox" id="chkPresente" ${embrulho.ativo ? "checked" : ""}> <span>É para presente<br><small style="color:var(--suave)">Avise e cuidamos da embalagem e do cartão.</small></span></label>
+        <label class="presente"><input type="checkbox" id="chkPresente" ${embrulho.ativo ? "checked" : ""}> <span>É para presente<br><small style="color:var(--suave)">Toda joia vai na embalagem LAHUD. Escreva a mensagem e ela vai no cartão.</small></span></label>
         <label class="campo" id="campoMsg" ${embrulho.ativo ? "" : "hidden"}><span>Mensagem do cartão</span><textarea id="msgPresente" rows="2" maxlength="200" placeholder="Escreva sua mensagem">${esc(embrulho.mensagem)}</textarea></label>
       </div>`;
     const total = itens.reduce((s, p) => s + p.preco, 0);
     rodape.innerHTML = `
       <div class="resumo">
         <div><span>Subtotal</span><span>${brl(total)}</span></div>
-        <div><span>Entrega</span><span>a combinar</span></div>
+        <div><span>Entrega</span><span>Grátis</span></div>
         <div class="total"><span>Total</span><span>${brl(total)}</span></div>
         <div style="color:var(--suave);font-size:13px;justify-content:flex-end">${parcela(total)}</div>
+        <div style="color:var(--ouro);font-size:13px;justify-content:flex-end">ou ${brl(total * (1 - L.descontoPix / 100))} no Pix (${L.descontoPix}% OFF)</div>
       </div>
       <label class="campo"><span>Seu nome</span><input id="nomeCliente" autocomplete="name" placeholder="Como podemos te chamar?"></label>
       <a class="btn btn--bloco" id="btnFinalizar" target="_blank" rel="noopener" href="#">Finalizar pelo WhatsApp</a>
@@ -629,7 +670,7 @@
             <li><a href="#/colecao/old-but-gold">Old But Gold</a></li><li><a href="#/colecao/maria-e-luzia">Maria &amp; Luzia</a></li>
             ${CATS.map(c => `<li><a href="#/joias/${c.slug}">${c.nome}</a></li>`).join("")}</ul></div>
           <div><h3>LAHUD</h3><ul>
-            <li><a href="#/historia">Nossa história</a></li><li><a href="#/personalizacao">Personalização</a></li>
+            <li><a href="#/historia">Nossa história</a></li><li><a href="#/personalizacao">Minha LAHUD</a></li>
             <li><a href="#/cuidados">Cuidados</a></li><li><a href="#/atendimento">Atendimento</a></li></ul></div>
           <div><h3>Contato</h3><ul>
             <li><a target="_blank" rel="noopener" href="${wa("Olá!")}">WhatsApp ${esc(L.whatsappTexto)}</a></li>

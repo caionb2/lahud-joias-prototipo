@@ -16,7 +16,8 @@ window.LOJA = {
   designer: "Verônica",
 
   // Condições comerciais exibidas no site (confirme antes de publicar)
-  parcelas: 10,             // "10x sem juros", como no catálogo Old But Gold
+  parcelas: 10,             // "10x sem juros no cartão" (destaque Facilidades)
+  descontoPix: 5,           // "5% OFF Pix e transferência" (destaque Facilidades)
 
   // Faixa de anúncio no topo. Deixe "" para esconder.
   anuncio: "Best & Black November: joias em ouro 18k com até 15% OFF. Clientes VIP ganham mais 5%.",
