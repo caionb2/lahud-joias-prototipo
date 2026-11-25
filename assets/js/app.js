@@ -168,9 +168,12 @@
             <a href="#/colecao/maria-e-luzia" class="btn btn--branco">Descobrir Maria &amp; Luzia</a>
             <a href="#/colecao/old-but-gold" class="btn btn--contorno-branco">Old But Gold</a>
           </div>
+          <button class="hero__filme" data-filme><span class="hero__filme-icone">${ICONE_PLAY}</span>Assista ao filme: a história da LAHUD · ${FILME.duracao}</button>
         </div>
         <span class="hero__rolar" aria-hidden="true"></span>
       </section>
+
+      ${blocoFilme(false)}
 
       <section class="secao">
         <div class="wrap manifesto revela">
@@ -179,8 +182,6 @@
           <div class="assinatura">Por Verônica e Luzia</div>
         </div>
       </section>
-
-      ${blocoFilme(false)}
 
       ${blocoMariaLuzia(true)}
 

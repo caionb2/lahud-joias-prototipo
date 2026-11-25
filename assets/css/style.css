@@ -692,3 +692,28 @@ body.sobre-hero .header .logo__claro { display: block; }
   .filme-modal__fechar { right: 14px; top: max(14px, env(safe-area-inset-top)); }
 }
 .reduzir-movimento .filme__quadro:hover video { transform: none; }
+
+/* Atalho do filme na capa */
+.hero__filme {
+  display: inline-flex; align-items: center; gap: 12px; margin-top: 26px; padding: 6px 4px;
+  font: 400 11px/1.3 var(--ui); letter-spacing: .2em; text-transform: uppercase; color: var(--marfim);
+}
+.hero__filme-icone {
+  width: 38px; height: 38px; border-radius: 50%; display: grid; place-items: center; flex: none;
+  border: 1px solid rgba(247,244,239,.7); background: rgba(247,244,239,.12);
+  backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); transition: transform .4s var(--ease), background .3s;
+}
+.hero__filme-icone svg { margin-left: 2px; }
+.hero__filme:hover .hero__filme-icone { transform: scale(1.08); background: rgba(247,244,239,.25); }
+.hero__filme:hover { text-decoration: underline; text-underline-offset: 5px; }
+@media (max-width: 820px) {
+  .hero__filme { font-size: 10px; letter-spacing: .16em; margin-top: 18px; text-align: left; }
+  .hero__conteudo { bottom: 7vh; }
+}
+/* Celular: capa mais enxuta para o atalho do filme não ficar sob a barra do Safari */
+@media (max-width: 820px) {
+  .hero__conteudo { bottom: calc(11vh + env(safe-area-inset-bottom)); }
+  .hero__conteudo > p:not(.eyebrow) { display: none; }
+  .hero h1 { margin-bottom: 26px; }
+  .hero__rolar { display: none; }
+}
