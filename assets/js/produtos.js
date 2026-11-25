@@ -11,9 +11,10 @@
    ========================================================================= */
 window.CATEGORIAS = [
   { slug: "aneis",     nome: "Anéis",     capa: "assets/img/joias/anel-chuveiro.jpg" },
+  { slug: "colares",   nome: "Colares",   capa: "assets/img/joias/ml-colar-laura-modelo.jpg" },
   { slug: "correntes", nome: "Correntes", capa: "assets/img/joias/corrente-corda.jpg" },
-  { slug: "brincos",   nome: "Brincos",   capa: "assets/img/joias/brincos-modelo.jpg" },
-  { slug: "pulseiras", nome: "Pulseiras", capa: "assets/img/joias/bracelete.jpg" }
+  { slug: "brincos",   nome: "Brincos",   capa: "assets/img/joias/ml-argola-judite.jpg" },
+  { slug: "pulseiras", nome: "Pulseiras", capa: "assets/img/joias/ml-pulseira-paulo.jpg" }
 ];
 
 window.COLECOES = {
@@ -36,11 +37,72 @@ window.COLECOES = {
     texto: [
       "O design das peças surge dos azulejos originais da casa que eles mesmos ergueram. Linhas, relevos e assimetrias que, por décadas, guardaram silêncio e agora renascem como arte, afeto e permanência.",
       "Uma coleção que celebra a força, a beleza e a poesia das histórias que nos antecedem."
-    ]
+    ],
+    capa: "assets/img/joias/ml-capa.jpg",
+    capa2: "assets/img/joias/ml-capa-2.jpg",
+    galeria: ["assets/img/joias/ml-argola-judite-modelo.jpg", "assets/img/joias/ml-capa-4.jpg", "assets/img/joias/ml-colar-laura-modelo.jpg"]
   }
 };
 
 const F = n => "assets/img/joias/" + n + ".jpg";
+
+/* Maria & Luzia (catálogo 10/2026): peças feitas à mão, sob encomenda.
+   Preço por acabamento (com brilhantes ou liso) e por tamanho.
+   O catálogo mostra parcelas de 10x; aqui está o valor total (10 × parcela).
+   Formato:  precos: { "Acabamento": { "Tamanho": valor } }   (tamanho "" = único) */
+const ML = (id, tipo, nome, categoria, detalhes, precos, fotos, extra) => Object.assign({
+  id: "ml-" + id, tipo, nome: tipo.charAt(0).toUpperCase() + tipo.slice(1) + " " + nome, nomeCurto: nome,
+  colecao: "maria-e-luzia", categoria, ouro: "amarelo", detalhes, precos,
+  preco: Math.min(...Object.values(precos).flatMap(t => Object.values(t))),
+  fotos: fotos.map(F), encomenda: true
+}, extra || {});
+
+window.PRODUTOS_ML = [
+  ML("brinco-maria", "brinco", "Maria", "brincos",
+    ["Ouro amarelo 18k", "Com 2 brilhantes ou liso", "Tamanhos PP, P, M e G"],
+    { "Com 2 brilhantes": { PP: 1770, P: 2860, M: 4210, G: 8750 }, "Liso": { PP: 1540, P: 2640, M: 3950, G: 8510 } },
+    ["ml-brinco-maria", "ml-brinco-maria-modelo"], { destaque: true }),
+  ML("anel-marina", "anel", "Marina", "aneis",
+    ["Ouro amarelo 18k", "Com 19 brilhantes ou liso (a quantidade de pedras varia de acordo com o aro)"],
+    { "Com brilhantes": { "Aro até 17": 6690, "Aro 18 ou maior": 7540 }, "Liso": { "Aro até 17": 4380, "Aro 18 ou maior": 5690 } },
+    ["ml-anel-marina", "ml-anel-marina-modelo"], { destaque: true, aro: true }),
+  ML("pulseira-paulo", "pulseira", "Paulo", "pulseiras",
+    ["Ouro amarelo 18k", "Com 6 brilhantes ou lisa"],
+    { "Com 6 brilhantes": { "": 6930 }, "Lisa": { "": 6250 } },
+    ["ml-pulseira-paulo", "ml-pulseira-paulo-modelo"], { destaque: true }),
+  ML("pulseira-jamil", "pulseira", "Jamil", "pulseiras",
+    ["Ouro amarelo 18k", "Com 1 brilhante ou lisa", "Tamanhos P e M"],
+    { "Com 1 brilhante": { P: 2360, M: 2980 }, "Lisa": { P: 2220, M: 2860 } },
+    ["ml-pulseira-jamil", "ml-pulseira-jamil-modelo"]),
+  ML("colar-laura", "colar", "Laura", "colares",
+    ["Ouro amarelo 18k", "Com 3 brilhantes ou liso"],
+    { "Com 3 brilhantes": { "": 10830 }, "Liso": { "": 9960 } },
+    ["ml-colar-laura", "ml-colar-laura-modelo"], { destaque: true }),
+  ML("ear-cuff-laura", "ear cuff", "Laura", "brincos",
+    ["Ouro amarelo 18k", "Com 6 brilhantes ou liso"],
+    { "Com 6 brilhantes": { "": 7580 }, "Liso": { "": 6990 } },
+    ["ml-ear-cuff-laura", "ml-ear-cuff-laura-modelo"]),
+  ML("colar-luzia", "colar", "Luzia", "colares",
+    ["Ouro amarelo 18k", "Com 1 brilhante ou liso", "Tamanhos M e G"],
+    { "Com 1 brilhante": { M: 5120, G: 9150 }, "Liso": { M: 4740, G: 9020 } },
+    ["ml-colar-luzia", "ml-colar-luzia-modelo"], { destaque: true }),
+  ML("argola-judite", "argola", "Judite", "brincos",
+    ["Ouro amarelo 18k", "Com 24 brilhantes ou lisa", "Tamanhos P e M"],
+    { "Com 24 brilhantes": { P: 9450, M: 10300 }, "Lisa": { P: 6410, M: 6870 } },
+    ["ml-argola-judite", "ml-argola-judite-modelo"], { destaque: true }),
+  ML("argola-amelia", "argola", "Amélia", "brincos",
+    ["Ouro amarelo 18k", "Com 2 brilhantes ou lisa", "Tamanhos PP e M"],
+    { "Com 2 brilhantes": { PP: 4960, M: 7810 }, "Lisa": { PP: 4720, M: 7570 } },
+    ["ml-argola-amelia", "ml-argola-amelia-modelo"]),
+  ML("pingente-joao", "pingente", "João", "colares",
+    ["Ouro amarelo 18k", "Com 1 brilhante ou liso", "Tamanhos M e G"],
+    { "Com 1 brilhante": { M: 2430, G: 4450 }, "Liso": { M: 2290, G: 4320 } },
+    ["ml-pingente-joao", "ml-pingente-joao-modelo"]),
+  ML("anel-jose", "anel", "José", "aneis",
+    ["Ouro amarelo 18k", "Com 1 brilhante ou liso"],
+    { "Com 1 brilhante": { "": 5980 }, "Liso": { "": 5370 } },
+    ["ml-anel-jose", "ml-anel-jose-modelo"], { aro: true })
+];
 
 window.PRODUTOS = [
   // ------------------------------ ANÉIS ------------------------------
@@ -99,3 +161,6 @@ window.PRODUTOS = [
     detalhes: ["Ouro branco 18k · 7,04 g", "Comprimento 20 cm"],
     preco: 8880, mercado: null, fotos: [F("bracelete-ii")] }
 ];
+
+// Vitrine completa: Maria & Luzia primeiro (coleção mais recente), depois Old But Gold
+window.PRODUTOS = window.PRODUTOS_ML.concat(window.PRODUTOS);

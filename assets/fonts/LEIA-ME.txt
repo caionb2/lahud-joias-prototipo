@@ -1,0 +1,8 @@
+Fontes oficiais da LAHUD: Alta (logo e títulos) e Garet (números).
+Elas não estão no Google Fonts. Para o site usar sempre as oficiais:
+1. Converta os arquivos da fonte para .woff2 (ex.: transfonter.org).
+2. Salve aqui com estes nomes: Alta-Regular.woff2, Garet-Book.woff2
+3. Em assets/css/style.css, no bloco @font-face, troque  local(...)  por
+   local(...), url("../fonts/Alta-Regular.woff2") format("woff2")
+Confirme antes se a licença da fonte permite uso em site.
+Enquanto isso, o site usa Italiana (no lugar da Alta) e Jost (no lugar da Garet).
