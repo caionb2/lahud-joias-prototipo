@@ -180,6 +180,8 @@
         </div>
       </section>
 
+      ${blocoFilme(false)}
+
       ${blocoMariaLuzia(true)}
 
       <section class="secao">
@@ -275,6 +277,63 @@
             : `<a href="${wa(msg)}" target="_blank" rel="noopener" class="btn">Receber o catálogo em PDF</a>`}
         </div>
       </section>`;
+  }
+
+  // Filme "A história da LAHUD" (vídeo vertical 9:16 de Verônica e Luzia)
+  // Prévia: os primeiros 5,6 s em loop, sem som (o navegador baixa só esse trecho).
+  // Ao tocar: abre o filme completo com som, em tela cheia no celular.
+  const FILME = { src: "assets/video/historia.mp4", capa: "assets/img/historia-capa.jpg", duracao: "2:13", loop: 5.6 };
+  function blocoFilme(naHistoria) {
+    return `
+      <section class="filme${naHistoria ? " filme--historia" : ""}">
+        <div class="wrap filme__grid">
+          <div class="filme__texto revela">
+            <p class="eyebrow">Filme · ${FILME.duracao} · legendado</p>
+            <h2>O buraco de <em>ouro</em></h2>
+            <p>Na guerra do Líbano, Maria escondeu as joias da família num buraco na parede. Dez anos depois, foi esse ouro que a trouxe ao Brasil, para junto de José.</p>
+            <blockquote>“Não, nós vamos enfrentar a vida!”<cite>Maria, nas palavras da filha Luzia</cite></blockquote>
+            <button class="btn btn--branco" data-filme>${ICONE_PLAY} Assistir ao filme</button>
+            <p class="filme__assinatura">Com Verônica &amp; Luzia</p>
+          </div>
+          <button class="filme__quadro" data-filme aria-label="Assistir ao filme A história da LAHUD, com Verônica e Luzia (${FILME.duracao}, com som e legendas)">
+            <video class="filme__loop" muted playsinline preload="metadata" poster="${FILME.capa}" src="${FILME.src}#t=0,${FILME.loop}" aria-hidden="true" tabindex="-1"></video>
+            <span class="filme__play" aria-hidden="true">${ICONE_PLAY}</span>
+            <span class="filme__tempo" aria-hidden="true">${FILME.duracao}</span>
+          </button>
+        </div>
+      </section>`;
+  }
+  const ICONE_PLAY = `<svg width="14" height="14" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4.5v15l12.5-7.5L7 4.5Z" fill="currentColor"/></svg>`;
+  function ativarFilmes() {
+    const reduzir = document.documentElement.classList.contains("reduzir-movimento");
+    $$(".filme__loop").forEach(v => {
+      v.addEventListener("timeupdate", () => { if (v.currentTime >= FILME.loop - 0.05) v.currentTime = 0; });
+      if (reduzir || !("IntersectionObserver" in window)) return;
+      new IntersectionObserver(es => es.forEach(e => {
+        if (e.isIntersecting) v.play().catch(() => {}); else v.pause();
+      }), { threshold: 0.35 }).observe(v);
+    });
+  }
+  let filmeFoco;
+  function abrirFilme() {
+    filmeFoco = document.activeElement;
+    $$(".filme__loop").forEach(v => v.pause());
+    const m = document.createElement("div");
+    m.className = "filme-modal"; m.setAttribute("role", "dialog"); m.setAttribute("aria-modal", "true"); m.setAttribute("aria-label", "Filme: A história da LAHUD");
+    m.innerHTML = `
+      <div class="filme-modal__fundo" data-fechar-filme></div>
+      <div class="filme-modal__palco">
+        <video controls playsinline autoplay preload="auto" poster="${FILME.capa}" src="${FILME.src}"></video>
+        <button class="filme-modal__fechar" data-fechar-filme aria-label="Fechar filme"><svg width="22" height="22" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg></button>
+      </div>`;
+    document.body.appendChild(m); document.body.style.overflow = "hidden";
+    const v = m.querySelector("video"); v.play().catch(() => {});
+    m.querySelector(".filme-modal__fechar").focus();
+  }
+  function fecharFilme() {
+    const m = $(".filme-modal"); if (!m) return;
+    m.querySelector("video").pause(); m.remove(); document.body.style.overflow = "";
+    filmeFoco && filmeFoco.focus && filmeFoco.focus();
   }
 
   // Depoimentos reais (destaque "Clientes" do Instagram)
@@ -563,9 +622,25 @@
     historia: {
       eyebrow: "Nossa história", titulo: "Joias que contam <em>histórias</em>",
       corpo: `
-        <p>A LAHUD nasce de uma história de família. De Maria e José, bisavós da nossa fundadora, que ergueram com as próprias mãos a casa onde tudo começou. E de Luzia, a voz que manteve essa memória viva por gerações.</p>
-        <p class="destaque">“Há presenças que permanecem. Nos valores que herdamos, nas histórias que contamos e nas lembranças que escolhemos guardar.”</p>
-        <p>Por isso, para nós, joia nunca é só adorno. Cada peça nasce do desenho e das mãos de Verônica, designer e ourives da LAHUD, pensada para carregar significado e ser passada adiante.</p>
+        <p class="destaque">LAHUD é o sobrenome da nossa família e representará sempre a nossa história.</p>
+        <h2>O buraco de <em>ouro</em></h2>
+        <p>José e Maria, bisavós da nossa fundadora, vieram do Líbano para o Brasil como refugiados. José veio primeiro. Só dez anos depois conseguiu trazer Maria.</p>
+        <p>Enquanto isso, no Líbano em guerra, os exércitos passavam e saqueavam as casas, levando tudo o que tinha valor. Maria teve a ideia de abrir um buraco na parede e esconder ali todas as joias e os bens da família. Entre eles, os brincos de libra esterlina, tão pesados que chegaram a rasgar a sua orelha.</p>
+        <p>Quando a guerra acabou, José mandou buscá-la. Para vir para o Brasil, foi preciso abrir o buraco de ouro. E quando chegaram aqui, começou a vida deles.</p>
+        <p>Quem guardou essa memória foi Luzia, filha de José e Maria e avó de Verônica, sempre uma ótima contadora de histórias. Ouvir de novo a história do buraco de ouro, num momento de transformação, fez Verônica decidir contá-la em joias.</p>
+        <p>Por isso, para nós, joia nunca é só adorno. Cada peça nasce do desenho e das mãos de Verônica, designer e ourives da LAHUD, para carregar significado e ser passada adiante.</p>
+        <div class="acordeao" style="margin-top:34px">
+          <details><summary>Ler a transcrição do filme</summary><div class="conteudo transcricao">
+            <p><strong>Verônica:</strong> Minha vó Luzia sempre foi uma ótima contadora de histórias. Pode ser que ela já tenha me contado a do buraco de ouro antes, mas ela só mexeu comigo depois de um processo de transformação que eu tive com o câncer na minha vida. E hoje eu vim aqui para contar a da LAHUD. Meus bisavós vieram do Líbano, refugiados, mas meu bisavô veio primeiro, e só dez anos depois ele conseguiu trazer a minha bisavó.</p>
+            <p><strong>Luzia:</strong> Minha mãe falava para o meu pai: “José, tadinho... você está aqui faz dez anos. E eu lá sozinha, o que você tem?” “Ainda não tenho nada, mas tenho você para me ajudar!” E assim, minha mãe disse que pôs a mão na cintura e falou: “Não, nós vamos enfrentar a vida!”</p>
+            <p><strong>Verônica:</strong> Minha bisavó, lá no Líbano, teve uma ótima ideia: abrir um buraco na parede e colocar todas as joias e todos os produtos de valor que eles tinham. Porque, na época da guerra, os exércitos passavam e saqueavam todas as casas, pegando tudo que tinha valor.</p>
+            <p><strong>Luzia:</strong> Tinha os brincos de libra esterlina. Ela tinha até a orelha rasgada de tanto peso.</p>
+            <p><strong>Verônica:</strong> E dez anos depois, para vir para o Brasil, era abrir o buraco de ouro.</p>
+            <p><strong>Luzia:</strong> Aí, quando acabou a guerra, Verônica, meu pai mandou buscar a minha mãe. E quando chegaram aqui no Brasil, foi o começo da vida deles.</p>
+            <p><strong>Verônica:</strong> LAHUD é o sobrenome da nossa família e representará sempre a nossa história.</p>
+            <p><strong>Luzia:</strong> E é assim, e tá aí a minha história!</p>
+          </div></details>
+        </div>
         <h2>Nosso trabalho</h2>
         <p>As joias LAHUD são todas feitas artesanalmente em ouro 18k. Por isso, cada peça é única, gerada com muito amor e dedicação.</p>
         <p>São joias eternas: diferente de peças banhadas, o ouro maciço não desbota com o tempo. É durável e resistente o suficiente para ser usado todos os dias.</p>
@@ -701,6 +776,7 @@
     const t = TEXTOS[chave];
     main.innerHTML = `
       <section class="pagina-topo wrap"><p class="eyebrow">${t.eyebrow}</p><h1>${t.titulo}</h1></section>
+      ${chave === "historia" ? blocoFilme(true) : ""}
       <article class="wrap texto-longo">${t.corpo}</article>
       ${chave === "historia" ? blocoClientes() : ""}
       ${chave === "historia" ? `<section class="split"><div class="split__img"><img src="assets/img/joias/bracelete-modelo.jpg" alt="" loading="lazy"></div><div class="split__texto revela"><p class="eyebrow">Old But Gold</p><h2>Peças para <em>atravessar</em> o tempo</h2><p>${esc(COLS["old-but-gold"].chamada)}</p><a class="btn" href="#/colecao/old-but-gold">Ver a coleção</a></div></section>` : ""}`;
@@ -907,7 +983,7 @@
     $$(".nav a").forEach(n => n.toggleAttribute("aria-current", h.startsWith(n.dataset.nav) || (n.dataset.nav === "joias" && r === "joia")));
     $$(".nav a[aria-current]").forEach(n => n.setAttribute("aria-current", "page"));
     window.scrollTo({ top: 0, behavior: "instant" });
-    headerHero(); revelar(); aplicarPrefs();
+    headerHero(); revelar(); aplicarPrefs(); ativarFilmes();
   }
 
   // --------------------------------------------------------------- eventos
@@ -919,6 +995,8 @@
 
     document.addEventListener("click", e => {
       if (e.target.closest("[data-limpar-dados]")) { ["lahud_sacola","lahud_desejos","lahud_presente","lahud_a11y","lahud_cookies"].forEach(k => { try { localStorage.removeItem(k); } catch {} }); sacola = []; favoritos = []; embrulho = { ativo: false, mensagem: "" }; badges(); aplicarPrefs(); aviso("Dados deste site apagados"); return; }
+      if (e.target.closest("[data-fechar-filme]")) { fecharFilme(); return; }
+      if (e.target.closest("[data-filme]")) { abrirFilme(); return; }
       const pref = e.target.closest("[data-pref]");
       if (pref) { alternarPref(pref.dataset.pref); return; }
       const fav = e.target.closest("[data-fav]");
@@ -946,7 +1024,8 @@
     });
     document.addEventListener("keydown", e => {
       if (e.key !== "Escape") return;
-      if ($(".lightbox")) $(".lightbox").remove();
+      if ($(".filme-modal")) fecharFilme();
+      else if ($(".lightbox")) $(".lightbox").remove();
       else if (!$("#drawer").hidden) fecharSacola();
       else if (!$("#menuMobile").hidden) fecharMenu();
       else if (!$("#busca").hidden) { $("#busca").hidden = true; headerHero(); }

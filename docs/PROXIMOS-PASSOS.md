@@ -9,6 +9,7 @@
 5. **Fontes e logo**: o logo oficial já está no site (recebido em PNG, recortado com fundo transparente). Enviar o arquivo SVG original deixa o logo mais nítido em telas grandes. Alta e Garet não são do Google Fonts: enviar os arquivos (.woff2) e confirmar a licença; até lá o site usa Italiana e Jost.
 6. **Políticas**: Termos de uso, Política de privacidade, Cookies e Trocas são rascunhos para revisão jurídica. Completar razão social, CNPJ e endereço.
 7. **Prazos**: Facilidades fala em 20 dias úteis (peças feitas à mão) e Minha LAHUD em até 30 dias corridos. Confirmar o prazo das peças Old But Gold, que já estão prontas.
+8. **Filme**: a transcrição em Nossa história inclui a fala da Verônica sobre o câncer, como está no vídeo. Confirmar com ela se quer esse trecho escrito no site.
 
 ## Próximas fases (mesmas opções do Couro & Lar)
 
